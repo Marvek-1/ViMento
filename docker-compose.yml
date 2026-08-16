@@ -1,0 +1,135 @@
+name: vibe-trading-production
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. Full-Stack Application Service (Frontend SPA + Node/Express API + Trading)
+  # ----------------------------------------------------------------------------
+  vibe-trading:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: vibe-trading:production
+    container_name: vibe-trading-app
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOST=0.0.0.0
+      - DOMAIN=vt.mostarindustries.com
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - VIBE_PAPER_DATABASE_URL=postgresql://${POSTGRES_USER:-vibe_user}:${POSTGRES_PASSWORD:-vibe_secure_pass_2026}@postgres:5432/${POSTGRES_DB:-vibe_trading}
+      - TRADING_MODE=${TRADING_MODE:-paper}
+      - ENABLE_LIVE_TRADING=${ENABLE_LIVE_TRADING:-false}
+      - REQUIRE_MANUAL_APPROVAL=${REQUIRE_MANUAL_APPROVAL:-false}
+      - OKX_API_KEY=${OKX_API_KEY:-}
+      - OKX_SECRET_KEY=${OKX_SECRET_KEY:-}
+      - OKX_PASSPHRASE=${OKX_PASSPHRASE:-}
+      - OKX_SIMULATOR=${OKX_SIMULATOR:-1}
+    volumes:
+      - vibe_data:/app/data
+      - vibe_logs:/app/logs
+      - vibe_runs:/app/agent/runs
+      - vibe_sessions:/app/agent/paper_sessions
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 4096M
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+
+  # ----------------------------------------------------------------------------
+  # 2. PostgreSQL Relational Database (Persistent Trading State & Ledger)
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: vibe-trading-db
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-vibe_trading}
+      POSTGRES_USER: ${POSTGRES_USER:-vibe_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vibe_secure_pass_2026}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vibe_user} -d ${POSTGRES_DB:-vibe_trading}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
+
+  # ----------------------------------------------------------------------------
+  # 3. Nginx Reverse Proxy (SSL Termination, WebSocket Support & Caching)
+  # ----------------------------------------------------------------------------
+  nginx:
+    image: nginx:alpine
+    container_name: vibe-trading-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - certbot_conf:/etc/letsencrypt:ro
+      - certbot_www:/var/www/certbot:ro
+    depends_on:
+      - vibe-trading
+    networks:
+      - internal-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
+
+  # ----------------------------------------------------------------------------
+  # 4. Certbot (Automated Let's Encrypt SSL Certificates for vt.mostarindustries.com)
+  # ----------------------------------------------------------------------------
+  certbot:
+    image: certbot/certbot:latest
+    container_name: vibe-trading-certbot
+    restart: unless-stopped
+    volumes:
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - internal-network
+
+networks:
+  internal-network:
+    driver: bridge
+
+volumes:
+  vibe_data:
+    name: vibe_app_data
+  vibe_logs:
+    name: vibe_app_logs
+  vibe_runs:
+    name: vibe_app_runs
+  vibe_sessions:
+    name: vibe_app_sessions
+  postgres_data:
+    name: vibe_postgres_data
+  certbot_conf:
+    name: vibe_certbot_conf
+  certbot_www:
+    name: vibe_certbot_www
