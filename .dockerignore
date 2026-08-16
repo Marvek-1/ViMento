@@ -1,0 +1,16 @@
+node_modules
+*/node_modules
+frontend/node_modules
+.git
+.github
+*.log
+logs/
+dist
+frontend/dist
+.env
+.env.local
+.cache
+coverage
+paper_trading_fix_bundle
+archive
+*.patch
