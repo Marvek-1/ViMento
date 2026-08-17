@@ -1,0 +1,1 @@
+{"account_id":"f1e4fca1-b329-46fc-8b04-a25683b6abcf","worker_id":"candidate_15m","strategy_id":"candidate","timeframe":"15m","mode":"paper","initial_balance":10000,"margin_mode":"isolated","leverage":10,"margin_per_trade":20,"universe_path":"../universe_frozen_canary8.json","status":"READY"}

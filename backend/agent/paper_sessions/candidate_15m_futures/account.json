@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "initial_balance": 10000.0,
+  "wallet_balance": 10005.755456854076,
+  "reserved_margin": 0.0,
+  "realized_gross_pnl": 9.699880552563629,
+  "realized_net_pnl": 5.755456854085289,
+  "total_fees": 3.8331407981164802,
+  "total_funding": 0.11128290036186002,
+  "total_liquidation_fees": 0.0,
+  "opened_trades": 20,
+  "closed_trades": 20,
+  "total_insurance_fund_shortfall": 0.0,
+  "positions": {},
+  "applied_funding_event_ids": [
+    "SOLUSDT:2026-08-02T08:00:00Z",
+    "BTCUSDT:2026-08-02T08:00:00Z",
+    "ETHUSDT:2026-08-02T08:00:00Z",
+    "BNBUSDT:2026-08-02T08:00:00Z",
+    "XRPUSDT:2026-08-02T08:00:00Z",
+    "ADAUSDT:2026-08-02T08:00:00Z",
+    "DOGEUSDT:2026-08-02T08:00:00Z",
+    "AVAXUSDT:2026-08-02T08:00:00Z",
+    "AVAXUSDT:2026-08-16T00:00:00Z"
+  ],
+  "updated_at": "2026-08-16T19:22:11.686138+00:00",
+  "available_balance": 10005.755456854076
+}

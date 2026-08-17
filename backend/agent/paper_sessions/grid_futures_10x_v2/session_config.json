@@ -1,0 +1,13 @@
+{
+  "account_id": "grid_futures_10x_v2",
+  "engine": "futures_paper_engine.FuturesPaperEngine",
+  "adapter": "many_bots_futures_adapter.ManyBotsFuturesAdapter",
+  "initial_balance": 25000.0,
+  "margin_mode": "isolated",
+  "leverage": 10,
+  "margin_per_trade": 20.0,
+  "expected_notional_per_trade": 200.0,
+  "universe_path": "../universe_frozen_canary8.json",
+  "status": "INITIALIZED_NOT_LAUNCHED",
+  "note": "Created by FuturesPaperEngine(initial_balance=25000) only. No positions opened, no PM2 process started. Do not start under PM2 until the full test suite (test_futures_paper_engine.py, test_futures_paper_engine_hardening.py, test_many_bots_futures_adapter.py) has been run against this checkout."
+}

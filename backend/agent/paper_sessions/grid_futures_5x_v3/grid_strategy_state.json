@@ -1,0 +1,21 @@
+{
+  "center_price": 63974.3,
+  "config": {
+    "grid_spacing_bps": 25.0,
+    "levels_per_side": 3,
+    "leverage": 5,
+    "margin_per_level": 10.0,
+    "max_open_levels": 3,
+    "max_total_notional": 150.0,
+    "stop_loss_bps": 90.0,
+    "symbol": "BTC-USDT",
+    "take_profit_bps": 30.0
+  },
+  "occupied": {
+    "long:1": "07afcaaae2f9420b",
+    "long:2": "3d9c33e786074cb9",
+    "long:3": "59c345cf25144f8e"
+  },
+  "strategy_version": "bounded_grid_v1",
+  "traded_since_center": true
+}

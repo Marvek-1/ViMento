@@ -1,0 +1,51 @@
+{
+  "source_session": "/home/idona/MoStar/_apps/financial/Vibe-Trading-main/Vibe-Trading-main/backend/agent/paper_sessions/shadow_a_vx_control_10m_okx",
+  "immutable_inputs": [
+    "session.json",
+    "trades.jsonl",
+    "marks.jsonl"
+  ],
+  "trade_count": 302,
+  "mark_count": 668,
+  "first_divergence": {
+    "worker_id": "shadow_a_vx_control_10m_okx",
+    "account_id": null,
+    "strategy_id": "control",
+    "timeframe": null,
+    "mark_index": 666,
+    "mark_line_number": 667,
+    "timestamp": "2026-07-30T22:00:56.283900+00:00",
+    "symbol": "ADA-USDT",
+    "ledger_qty": 7616.156951842583,
+    "engine_qty": 7606.780215575118,
+    "position_delta": 9.376736267465276,
+    "ledger_cash": null,
+    "engine_cash": 0.4809059447036943,
+    "ledger_equity": 10011.643763658083,
+    "engine_equity": 10342.321464954548,
+    "realized_pnl": 11.643763658083774,
+    "unrealized_pnl": null,
+    "fees": 10.742648559155857,
+    "funding": 0.0,
+    "position_cost_basis": 0.0,
+    "position_market_value": 10341.840559009845,
+    "cash_plus_market_value_delta": 0.0,
+    "last_ledger_event_id": null,
+    "last_fill_id": null,
+    "last_trade_line_number": 302,
+    "last_trade": {
+      "timestamp": "2026-07-30T22:00:56.283900+00:00",
+      "symbol": "ADA-USDT",
+      "side": "BUY",
+      "qty": 8.680586176324626,
+      "price": 0.1697,
+      "notional": 1.473095474122289,
+      "fee_paid": 0.001473095474122289,
+      "reason": "rebalance",
+      "_line_number": 302
+    },
+    "difference": 330.6777012964649,
+    "cause": "POSITION_EVENT_MISMATCH"
+  },
+  "reconciled_through_all_marks": false
+}

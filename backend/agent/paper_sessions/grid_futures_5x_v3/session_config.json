@@ -1,0 +1,20 @@
+{
+  "account_id": "b7e2b9d0-6b7a-4c4a-9c8b-1a2f3e4d5c6a",
+  "worker_id": "grid_futures_5x",
+  "strategy_id": "bounded_grid_v1",
+  "timeframe": "tick",
+  "mode": "paper",
+  "initial_balance": 1000,
+  "margin_mode": "isolated",
+  "leverage": 5,
+  "grid_symbol": "BTC-USDT",
+  "margin_per_level": 10,
+  "max_total_notional": 150,
+  "levels_per_side": 3,
+  "max_open_levels": 3,
+  "grid_spacing_bps": 25,
+  "take_profit_bps": 30,
+  "stop_loss_bps": 90,
+  "strategy_config_hash": "87a43adbbe3ae535",
+  "status": "READY"
+}

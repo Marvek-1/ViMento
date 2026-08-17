@@ -1,0 +1,53 @@
+{
+  "total_realized_pnl": 1603.1579988166213,
+  "archived_sessions": [
+    {
+      "session_id": "shadow_ab_v2_control_5m",
+      "archived_at": "20260722_015358",
+      "realized_pnl": 266.0961305906367,
+      "return_pct": 2.660961305906367,
+      "trades": 756,
+      "fees": 11.340463719989827
+    },
+    {
+      "session_id": "shadow_ab_v2_control_10m",
+      "archived_at": "20260722_015358",
+      "realized_pnl": 266.94658547822837,
+      "return_pct": 2.669465854782284,
+      "trades": 549,
+      "fees": 11.115206919931158
+    },
+    {
+      "session_id": "shadow_ab_v2_control_15m",
+      "archived_at": "20260722_015358",
+      "realized_pnl": 267.0107180608338,
+      "return_pct": 2.6701071806083383,
+      "trades": 453,
+      "fees": 10.978813107732538
+    },
+    {
+      "session_id": "shadow_ab_v2_candidate10_5m",
+      "archived_at": "20260722_015358",
+      "realized_pnl": 267.21379452204565,
+      "return_pct": 2.6721379452204563,
+      "trades": 41,
+      "fees": 10.33948312658492
+    },
+    {
+      "session_id": "shadow_ab_v2_candidate10_10m",
+      "archived_at": "20260722_015358",
+      "realized_pnl": 267.85333139781505,
+      "return_pct": 2.6785333139781504,
+      "trades": 36,
+      "fees": 10.288762177174412
+    },
+    {
+      "session_id": "shadow_ab_v2_candidate10_15m",
+      "archived_at": "20260722_015358",
+      "realized_pnl": 268.03743876706176,
+      "return_pct": 2.6803743876706174,
+      "trades": 37,
+      "fees": 10.314000223047728
+    }
+  ]
+}

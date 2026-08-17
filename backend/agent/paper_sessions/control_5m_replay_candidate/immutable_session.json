@@ -1,0 +1,76 @@
+{
+  "strategy_type": "periodic_equal_weight_rebalance",
+  "symbols": [
+    "BTC-USDT",
+    "ETH-USDT",
+    "SOL-USDT",
+    "BNB-USDT",
+    "XRP-USDT",
+    "ADA-USDT",
+    "DOGE-USDT",
+    "LINK-USDT"
+  ],
+  "initial_cash": 10000.0,
+  "entry_time": "2026-07-28T01:15:31.561697+00:00",
+  "entry_prices": {
+    "BTC-USDT": 63189.3,
+    "ETH-USDT": 1875.28,
+    "SOL-USDT": 73.24,
+    "BNB-USDT": 564.4,
+    "XRP-USDT": 1.0588,
+    "ADA-USDT": 0.1547,
+    "DOGE-USDT": 0.06967,
+    "LINK-USDT": 8.321
+  },
+  "rebalance_interval_hours": 0.08333333333333333,
+  "fee_rate": 0.001,
+  "source": "binance",
+  "price_kind": "live_ticker_last",
+  "fees_modeled": true,
+  "slippage_modeled": false,
+  "cash_accounting_note": null,
+  "accounting_schema_version": 3,
+  "accounting_status": "ACCOUNTING_ERROR",
+  "min_rebalance_notional": 0.0,
+  "risk_config": {
+    "take_profit_pct": null,
+    "stop_loss_pct": null,
+    "trailing_stop_pct": null,
+    "max_hold_hours": null,
+    "leverage": 5.0,
+    "margin_mode": "isolated",
+    "liquidation_buffer_pct": 0.1,
+    "fixed_margin_per_trade": 0.0
+  },
+  "accounting_error": null,
+  "accounting_error_kind": "POSITION_LEDGER_MISMATCH",
+  "accounting_position_differences": {
+    "ADA-USDT": {
+      "book_qty": 7584.436495702838,
+      "trade_qty": 7565.67130325379,
+      "difference": 18.7651924490483
+    },
+    "BNB-USDT": {
+      "book_qty": 2.1827005164758844,
+      "trade_qty": 2.184969061668051,
+      "difference": -0.00226854519216646
+    },
+    "DOGE-USDT": {
+      "book_qty": 18290.191169261445,
+      "trade_qty": 18306.78585524064,
+      "difference": -16.594685979194765
+    },
+    "ETH-USDT": {
+      "book_qty": 0.6714433284901297,
+      "trade_qty": 0.6707231734437886,
+      "difference": 0.0007201550463410422
+    },
+    "SOL-USDT": {
+      "book_qty": 17.31903180520552,
+      "trade_qty": 17.333873961331406,
+      "difference": -0.01484215612588713
+    }
+  },
+  "accounting_stale_mark_symbols": [],
+  "accounting_error_detected_at": "2026-07-30T22:10:59.998948+00:00"
+}

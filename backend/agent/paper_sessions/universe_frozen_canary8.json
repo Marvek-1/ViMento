@@ -1,0 +1,15 @@
+{
+  "universe_id": "canary8_v1",
+  "symbols": [
+    "BTC-USDT",
+    "ETH-USDT",
+    "BNB-USDT",
+    "SOL-USDT",
+    "XRP-USDT",
+    "ADA-USDT",
+    "DOGE-USDT",
+    "AVAX-USDT"
+  ],
+  "symbols_sha256": "23773ea3a516ad1999ef3174788faf878c770b77f7bbe7b12d255d9364e122d5",
+  "note": "Frozen mechanical starting set for the 5x/10x isolated-margin canary. Not derived from current unrealized P&L; do not rotate symbols based on live marks."
+}

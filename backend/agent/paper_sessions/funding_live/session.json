@@ -1,0 +1,42 @@
+{
+  "strategy_type": "funding_rate_zscore",
+  "symbols": [
+    "BTC-USDT",
+    "ETH-USDT",
+    "SOL-USDT",
+    "BNB-USDT",
+    "XRP-USDT",
+    "ADA-USDT",
+    "DOGE-USDT",
+    "LINK-USDT"
+  ],
+  "initial_cash": 10000.0,
+  "entry_time": "2026-07-23T21:51:31.104806+00:00",
+  "entry_prices": {},
+  "rebalance_interval_hours": 0.08333333333333333,
+  "fee_rate": 0.0005,
+  "slippage_rate": 0.0003,
+  "source": "binance",
+  "price_kind": "live_ticker_last",
+  "fees_modeled": true,
+  "slippage_modeled": true,
+  "cash_accounting_note": null,
+  "accounting_schema_version": 3,
+  "accounting_status": "OK",
+  "min_rebalance_notional": 0.0,
+  "z_window": 168,
+  "entry_z": 1.5,
+  "exit_z": 0.5,
+  "max_position_pct": 0.25,
+  "poll_seconds": 60,
+  "risk_config": {
+    "take_profit_pct": 0.05,
+    "stop_loss_pct": 0.03,
+    "trailing_stop_pct": 0.02,
+    "max_hold_hours": 48.0,
+    "leverage": 5.0,
+    "margin_mode": "isolated",
+    "liquidation_buffer_pct": 0.1,
+    "fixed_margin_per_trade": 100.0
+  }
+}

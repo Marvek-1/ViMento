@@ -1,0 +1,121 @@
+{
+  "positions": {
+    "BTC-USDT": 0.01999866485654146,
+    "ETH-USDT": 0.6744405000116546,
+    "SOL-USDT": 17.372235879011157,
+    "BNB-USDT": 2.1870575125416885,
+    "XRP-USDT": 1193.1057776179414,
+    "ADA-USDT": 7607.476365666258,
+    "DOGE-USDT": 18345.17780303203,
+    "LINK-USDT": 152.68715184972126
+  },
+  "cash_remaining": 0.6581052280233548,
+  "reserved_margin": 9990.00999000999,
+  "last_rebalance_time": "2026-07-30T22:00:47.206127+00:00",
+  "position_metadata": {
+    "BTC-USDT": {
+      "symbol": "BTC-USDT",
+      "qty": 0.019783765030913322,
+      "entry_price": 63120.0,
+      "entry_time": "2026-07-28T01:17:13.801431+00:00",
+      "direction": 1,
+      "high_water_mark": 63120.0,
+      "low_water_mark": 63120.0,
+      "leverage": 1.0,
+      "margin": 1248.7512487512488,
+      "margin_mode": "isolated",
+      "liquidation_price": 0.0
+    },
+    "ETH-USDT": {
+      "symbol": "ETH-USDT",
+      "qty": 0.6674601789252492,
+      "entry_price": 1870.9,
+      "entry_time": "2026-07-28T01:17:13.801431+00:00",
+      "direction": 1,
+      "high_water_mark": 1870.9,
+      "low_water_mark": 1870.9,
+      "leverage": 1.0,
+      "margin": 1248.7512487512488,
+      "margin_mode": "isolated",
+      "liquidation_price": 0.0
+    },
+    "SOL-USDT": {
+      "symbol": "SOL-USDT",
+      "qty": 17.117906082950633,
+      "entry_price": 72.95,
+      "entry_time": "2026-07-28T01:17:13.801431+00:00",
+      "direction": 1,
+      "high_water_mark": 72.95,
+      "low_water_mark": 72.95,
+      "leverage": 1.0,
+      "margin": 1248.7512487512488,
+      "margin_mode": "isolated",
+      "liquidation_price": 0.0
+    },
+    "BNB-USDT": {
+      "symbol": "BNB-USDT",
+      "qty": 2.216062553240903,
+      "entry_price": 563.5,
+      "entry_time": "2026-07-28T01:17:13.801431+00:00",
+      "direction": 1,
+      "high_water_mark": 563.5,
+      "low_water_mark": 563.5,
+      "leverage": 1.0,
+      "margin": 1248.7512487512488,
+      "margin_mode": "isolated",
+      "liquidation_price": 0.0
+    },
+    "XRP-USDT": {
+      "symbol": "XRP-USDT",
+      "qty": 1182.753597983755,
+      "entry_price": 1.0558,
+      "entry_time": "2026-07-28T01:17:13.801431+00:00",
+      "direction": 1,
+      "high_water_mark": 1.0558,
+      "low_water_mark": 1.0558,
+      "leverage": 1.0,
+      "margin": 1248.7512487512488,
+      "margin_mode": "isolated",
+      "liquidation_price": 0.0
+    },
+    "ADA-USDT": {
+      "symbol": "ADA-USDT",
+      "qty": 8114.0432017625,
+      "entry_price": 0.1539,
+      "entry_time": "2026-07-28T01:17:13.801431+00:00",
+      "direction": 1,
+      "high_water_mark": 0.1539,
+      "low_water_mark": 0.1539,
+      "leverage": 1.0,
+      "margin": 1248.7512487512488,
+      "margin_mode": "isolated",
+      "liquidation_price": 0.0
+    },
+    "DOGE-USDT": {
+      "symbol": "DOGE-USDT",
+      "qty": 17985.759019894118,
+      "entry_price": 0.06943,
+      "entry_time": "2026-07-28T01:17:13.801431+00:00",
+      "direction": 1,
+      "high_water_mark": 0.06943,
+      "low_water_mark": 0.06943,
+      "leverage": 1.0,
+      "margin": 1248.7512487512488,
+      "margin_mode": "isolated",
+      "liquidation_price": 0.0
+    },
+    "LINK-USDT": {
+      "symbol": "LINK-USDT",
+      "qty": 150.59711152330544,
+      "entry_price": 8.292,
+      "entry_time": "2026-07-28T01:17:13.801431+00:00",
+      "direction": 1,
+      "high_water_mark": 8.292,
+      "low_water_mark": 8.292,
+      "leverage": 1.0,
+      "margin": 1248.7512487512488,
+      "margin_mode": "isolated",
+      "liquidation_price": 0.0
+    }
+  }
+}

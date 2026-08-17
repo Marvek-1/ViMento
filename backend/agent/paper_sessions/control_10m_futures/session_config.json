@@ -1,0 +1,1 @@
+{"account_id":"805a5633-81c5-40b6-bda8-eae4e42b414b","worker_id":"control_10m","strategy_id":"control","timeframe":"10m","mode":"paper","initial_balance":10000,"margin_mode":"isolated","leverage":5,"margin_per_trade":20,"universe_path":"../universe_frozen_canary8.json","status":"READY"}

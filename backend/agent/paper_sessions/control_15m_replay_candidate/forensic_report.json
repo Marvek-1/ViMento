@@ -1,0 +1,51 @@
+{
+  "source_session": "/home/idona/MoStar/_apps/financial/Vibe-Trading-main/Vibe-Trading-main/backend/agent/paper_sessions/shadow_a_vx_control_15m_okx",
+  "immutable_inputs": [
+    "session.json",
+    "trades.jsonl",
+    "marks.jsonl"
+  ],
+  "trade_count": 255,
+  "mark_count": 668,
+  "first_divergence": {
+    "worker_id": "shadow_a_vx_control_15m_okx",
+    "account_id": null,
+    "strategy_id": "control",
+    "timeframe": null,
+    "mark_index": 666,
+    "mark_line_number": 667,
+    "timestamp": "2026-07-30T21:59:42.805868+00:00",
+    "symbol": "BNB-USDT",
+    "ledger_qty": 2.185189635238129,
+    "engine_qty": 2.1870515534388533,
+    "position_delta": -0.001861918200724233,
+    "ledger_cash": null,
+    "engine_cash": 0.9897181514404374,
+    "ledger_equity": 10010.95656095109,
+    "engine_equity": 10347.86721266738,
+    "realized_pnl": 10.95656095108916,
+    "unrealized_pnl": null,
+    "fees": 10.70208408340707,
+    "funding": 0.0,
+    "position_cost_basis": 0.0,
+    "position_market_value": 10346.877494515938,
+    "cash_plus_market_value_delta": 0.0,
+    "last_ledger_event_id": null,
+    "last_fill_id": null,
+    "last_trade_line_number": 255,
+    "last_trade": {
+      "timestamp": "2026-07-30T21:59:42.805868+00:00",
+      "symbol": "ETH-USDT",
+      "side": "BUY",
+      "qty": 0.0010627148802993638,
+      "price": 1917.86,
+      "notional": 2.0381383603309375,
+      "fee_paid": 0.0020381383603309375,
+      "reason": "rebalance",
+      "_line_number": 255
+    },
+    "difference": 336.91065171628907,
+    "cause": "POSITION_EVENT_MISMATCH"
+  },
+  "reconciled_through_all_marks": false
+}

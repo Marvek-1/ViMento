@@ -1,0 +1,23 @@
+{
+  "positions": {
+    "XRP-USDT": -459.7701149425288
+  },
+  "cash_remaining": 10496.377852327452,
+  "reserved_margin": 0.0,
+  "last_rebalance_time": "2026-07-31T10:08:23.128284+00:00",
+  "position_metadata": {
+    "XRP-USDT": {
+      "symbol": "XRP-USDT",
+      "qty": 459.7701149425288,
+      "entry_price": 1.08717375,
+      "entry_time": "2026-07-30T23:11:25.229629+00:00",
+      "direction": -1,
+      "high_water_mark": 1.08717375,
+      "low_water_mark": 1.0708,
+      "leverage": 5.0,
+      "margin": 0.0,
+      "margin_mode": "isolated",
+      "liquidation_price": 1.195891125
+    }
+  }
+}

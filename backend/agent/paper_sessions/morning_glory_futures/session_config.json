@@ -1,0 +1,21 @@
+{
+  "account_id": "da4f02c8-b49e-4c87-a3bc-9399b78f60a1",
+  "worker_id": "morning_glory",
+  "strategy_id": "funding_rate_zscore",
+  "strategy_type": "funding_rate_zscore",
+  "timeframe": "tick",
+  "mode": "paper",
+  "initial_balance": 1000,
+  "margin_mode": "isolated",
+  "leverage": 5,
+  "symbol": "BTC-USDT",
+  "universe_path": "universe.json",
+  "margin_per_trade": 10,
+  "z_window": 120,
+  "entry_z": 1.5,
+  "exit_z": 0.5,
+  "take_profit_pct": 0.01,
+  "stop_loss_pct": 0.005,
+  "max_hold_minutes": 480,
+  "status": "READY"
+}

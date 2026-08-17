@@ -1,0 +1,61 @@
+{
+  "strategy_type": "periodic_equal_weight_rebalance",
+  "symbols": [
+    "BTC-USDT",
+    "ETH-USDT",
+    "SOL-USDT",
+    "BNB-USDT",
+    "XRP-USDT",
+    "ADA-USDT",
+    "DOGE-USDT",
+    "LINK-USDT"
+  ],
+  "initial_cash": 10000.0,
+  "entry_time": "2026-07-28T01:17:21.761375+00:00",
+  "entry_prices": {
+    "BTC-USDT": 63143.6,
+    "ETH-USDT": 1871.23,
+    "SOL-USDT": 73.0,
+    "BNB-USDT": 563.5,
+    "XRP-USDT": 1.056,
+    "ADA-USDT": 0.154,
+    "DOGE-USDT": 0.06943,
+    "LINK-USDT": 8.294
+  },
+  "rebalance_interval_hours": 0.25,
+  "fee_rate": 0.001,
+  "source": "binance",
+  "price_kind": "live_ticker_last",
+  "fees_modeled": true,
+  "slippage_modeled": false,
+  "cash_accounting_note": null,
+  "accounting_schema_version": 3,
+  "accounting_status": "ACCOUNTING_ERROR",
+  "min_rebalance_notional": 0.0,
+  "risk_config": {
+    "take_profit_pct": null,
+    "stop_loss_pct": null,
+    "trailing_stop_pct": null,
+    "max_hold_hours": null,
+    "leverage": 5.0,
+    "margin_mode": "isolated",
+    "liquidation_buffer_pct": 0.1,
+    "fixed_margin_per_trade": 0.0
+  },
+  "accounting_error": null,
+  "accounting_error_kind": "POSITION_LEDGER_MISMATCH",
+  "accounting_position_differences": {
+    "ETH-USDT": {
+      "book_qty": 0.674492306709145,
+      "trade_qty": 0.6755550215894444,
+      "difference": -0.001062714880299409
+    },
+    "SOL-USDT": {
+      "book_qty": 17.37293258485452,
+      "trade_qty": 17.35523936566022,
+      "difference": 0.01769321919429956
+    }
+  },
+  "accounting_stale_mark_symbols": [],
+  "accounting_error_detected_at": "2026-07-30T21:59:17.409782+00:00"
+}
