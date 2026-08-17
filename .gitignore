@@ -40,3 +40,7 @@ coverage/
 
 # Local dev server log (scripts/dev-local.sh)
 .dev-local.log
+
+# Python virtualenv (scripts/dev-local.sh) - contains symlinks Windows git cannot index
+.venv/
+venv/
