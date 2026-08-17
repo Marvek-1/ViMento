@@ -5,7 +5,6 @@ on:
   schedule:
     - cron: '0 */6 * * *'
 
-# Grant write permission explicitly so git push works
 permissions:
   contents: write
 
@@ -19,22 +18,23 @@ jobs:
           fetch-depth: 1
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install rsync
-        run: sudo apt-get update && sudo apt-get install -y rsync
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-      - name: Download AI Studio Snapshot
+      - name: Verify Project Structure & Install Dependencies
         run: |
-          echo "Downloading latest build bundle..."
-          curl -L "https://ais-dev-hyo5stcg65m7k5vmtwvm2l-430508190624.europe-west2.run.app/vibe-trading.zip" -o vibe-trading.zip
+          echo "Verifying project files..."
+          npm install
           
-          echo "Extracting snapshot..."
-          unzip -o vibe-trading.zip -d extracted_repo
-          rm vibe-trading.zip
-
-      - name: Merge & Clean Up Files
-        run: |
-          rsync -av --exclude='.git' --exclude='node_modules' --exclude='.github' extracted_repo/ ./
-          rm -rf extracted_repo
+          if [ -d "frontend" ]; then
+            echo "Building frontend..."
+            cd frontend
+            npm install
+            npm run build
+            cd ..
+          fi
 
       - name: Commit and Push Changes
         run: |
@@ -45,6 +45,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to sync."
           else
-            git commit -m "Auto-sync latest build from AI Studio builder [skip ci]"
+            git commit -m "Auto-sync project structure and build [skip ci]"
             git push origin main
           fi
