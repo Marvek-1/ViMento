@@ -28,9 +28,6 @@ const AlphaZoo = lazy(() =>
 const AutopilotRuns = lazy(() =>
   import("@/pages/AutopilotRuns").then((m) => ({ default: m.AutopilotRuns })),
 );
-const GridResearchLab = lazy(() =>
-  import("@/pages/GridResearchLab").then((m) => ({ default: m.GridResearchLab })),
-);
 const PaperTrading = lazy(() =>
   import("@/pages/PaperTrading").then((m) => ({ default: m.PaperTrading })),
 );
@@ -61,7 +58,6 @@ export const router = createBrowserRouter([
       { path: "/reports", element: wrap(Reports) },
       { path: "/paper-trading", element: wrap(PaperTrading) },
       { path: "/autopilot-runs", element: wrap(AutopilotRuns) },
-      { path: "/grid-research", element: wrap(GridResearchLab) },
       { path: "/settings", element: wrap(Settings) },
       { path: "/runs/:runId", element: wrap(RunDetail) },
       { path: "/compare", element: wrap(Compare) },

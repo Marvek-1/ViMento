@@ -44,3 +44,10 @@ coverage/
 # Python virtualenv (scripts/dev-local.sh) - contains symlinks Windows git cannot index
 .venv/
 venv/
+
+# Local dev shim created by scripts/dev-local.sh (symlink -> ../frontend)
+backend/frontend
+
+# Production credentials pulled from the VPS - never commit
+secrets/
+*.pgpass

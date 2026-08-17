@@ -56,27 +56,10 @@ function llmSettings() {
 
 function dataSourceSettings() {
   return {
-    active_market_feed: "okx",
-    binance_configured: false,
-    binance_key_hint: "Public REST & WebSocket ready",
-    okx_configured: true,
-    okx_key_hint: "Public Market & Futures Feed Active",
-    bybit_configured: false,
-    bybit_key_hint: "Public V5 REST & WS ready",
-    gateio_configured: false,
-    gateio_key_hint: "Public V4 Spot & Futures ready",
-    providers: [
-      {
-        id: "okx",
-        name: "OKX",
-        status: "connected",
-        latency_ms: 38,
-        configured: true,
-        capabilities: ["Spot", "USDT Margined Swaps"],
-        public_access: true,
-        default_url: "https://www.okx.com",
-      },
-    ],
+    tushare_token_configured: false,
+    baostock_supported: true,
+    baostock_installed: true,
+    baostock_message: "BaoStock available",
     env_path: "agent/.env",
   };
 }
@@ -154,7 +137,7 @@ describe("Settings IM channels panel", () => {
     render(<Settings />);
 
     expect(await screen.findByText("LLM Settings")).toBeInTheDocument();
-    expect(screen.getByText("Exchange Market Data & Execution")).toBeInTheDocument();
+    expect(screen.getByText("Data Source Settings")).toBeInTheDocument();
     expect(screen.getByText("IM Channels")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Refresh" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Start channels" })).toBeDisabled();
