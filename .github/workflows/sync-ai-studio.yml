@@ -1,20 +1,26 @@
 name: Sync from AI Studio Builder
 
 on:
-  workflow_dispatch: # Allows manual triggering from the GitHub Actions tab
+  workflow_dispatch:
   schedule:
-    - cron: '0 */6 * * *' # Optional: automatically sync every 6 hours (you can remove this if you only want manual sync)
+    - cron: '0 */6 * * *'
+
+# Grant write permission explicitly so git push works
+permissions:
+  contents: write
 
 jobs:
   sync:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install rsync
+        run: sudo apt-get update && sudo apt-get install -y rsync
 
       - name: Download AI Studio Snapshot
         run: |
@@ -27,7 +33,6 @@ jobs:
 
       - name: Merge & Clean Up Files
         run: |
-          # Copy extracted contents into the repository root, overwriting changed files
           rsync -av --exclude='.git' --exclude='node_modules' --exclude='.github' extracted_repo/ ./
           rm -rf extracted_repo
 
