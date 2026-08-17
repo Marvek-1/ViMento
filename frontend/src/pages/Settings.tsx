@@ -5,16 +5,6 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { api, isAuthRequiredError, type ChannelRuntimeStatus, type DataSourceSettings, type LLMProviderOption, type LLMSettings } from "@/lib/api";
 import { getApiAuthKey, setApiAuthKey } from "@/lib/apiAuth";
-import {
-  checkNeonConnection,
-  getStoredNeonJWT,
-  setStoredNeonJWT,
-  clearStoredNeonJWT,
-  NEON_APP_NAME,
-  NEON_DATA_API_URL,
-  NEON_AUTH_URL,
-  NEON_JWKS_URL,
-} from "@/lib/neon";
 
 interface LLMFormState {
   provider: string;
@@ -55,32 +45,8 @@ export function Settings() {
   const [apiKey, setApiKey] = useState("");
   const [localApiKey, setLocalApiKeyState] = useState(() => getApiAuthKey());
   const [clearApiKey, setClearApiKey] = useState(false);
-  const [binanceApiKey, setBinanceApiKey] = useState("");
-  const [binanceApiSecret, setBinanceApiSecret] = useState("");
-  const [clearBinanceKey, setClearBinanceKey] = useState(false);
-
-  const [okxApiKey, setOkxApiKey] = useState("");
-  const [okxApiSecret, setOkxApiSecret] = useState("");
-  const [okxPassphrase, setOkxPassphrase] = useState("");
-  const [clearOkxKey, setClearOkxKey] = useState(false);
-
-  const [bybitApiKey, setBybitApiKey] = useState("");
-  const [bybitApiSecret, setBybitApiSecret] = useState("");
-  const [clearBybitKey, setClearBybitKey] = useState(false);
-
-  const [gateioApiKey, setGateioApiKey] = useState("");
-  const [gateioApiSecret, setGateioApiSecret] = useState("");
-  const [clearGateioKey, setClearGateioKey] = useState(false);
-
-  const [activeExchangeTab, setActiveExchangeTab] = useState<"binance" | "okx" | "bybit" | "gate">("okx");
-  const [neonJwt, setNeonJwt] = useState(() => getStoredNeonJWT() || "");
-  const [testingNeon, setTestingNeon] = useState(false);
-  const [neonStatus, setNeonStatus] = useState<{
-    tested: boolean;
-    connected: boolean;
-    status: string;
-    hasToken: boolean;
-  } | null>(null);
+  const [tushareToken, setTushareToken] = useState("");
+  const [clearTushareToken, setClearTushareToken] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dataSaving, setDataSaving] = useState(false);
@@ -200,121 +166,6 @@ export function Settings() {
     window.location.reload();
   };
 
-  const submitNeonJwt = (event: FormEvent) => {
-    event.preventDefault();
-    if (neonJwt.trim()) {
-      setStoredNeonJWT(neonJwt.trim());
-      toast.success("Neon Identity Provider JWT saved for Data API operations");
-    } else {
-      clearStoredNeonJWT();
-      toast.success("Stored Neon JWT cleared");
-    }
-  };
-
-  const testNeonConnectionAction = async () => {
-    setTestingNeon(true);
-    try {
-      const res = await checkNeonConnection();
-      setNeonStatus({
-        tested: true,
-        connected: res.connected,
-        status: res.status,
-        hasToken: res.hasToken,
-      });
-      if (res.connected) {
-        toast.success(`Neon Data API connected successfully (${res.status})`);
-      } else {
-        toast.error(`Neon Data API connection issue: ${res.status}`);
-      }
-    } catch (err) {
-      setNeonStatus({
-        tested: true,
-        connected: false,
-        status: err instanceof Error ? err.message : "Connection failed",
-        hasToken: Boolean(neonJwt.trim()),
-      });
-      toast.error("Failed to connect to Neon Data API");
-    } finally {
-      setTestingNeon(false);
-    }
-  };
-
-  const neonDatabaseSection = (
-    <div className={cardClass}>
-      <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Database className="h-4 w-4 text-primary" />
-            <h2 className="text-base font-semibold">{"Neon Database & Data API"}</h2>
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-              {NEON_APP_NAME}
-            </span>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {"PostgreSQL Data API client with JWT validation against JWKS for row-level security (RLS)."}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={testNeonConnectionAction}
-          disabled={testingNeon}
-          className={`${ghostBtnClass} self-start md:self-auto`}
-        >
-          {testingNeon ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-          {"Test Data API"}
-        </button>
-      </div>
-
-      <div className="mb-4 grid gap-2 rounded-lg border border-border/40 bg-muted/20 p-3 text-xs">
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-muted-foreground">{"Data API URL:"}</span>
-          <span className="font-mono text-foreground break-all">{NEON_DATA_API_URL}</span>
-        </div>
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-muted-foreground">{"Auth URL:"}</span>
-          <span className="font-mono text-foreground break-all">{NEON_AUTH_URL}</span>
-        </div>
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-muted-foreground">{"JWKS URL (Auth):"}</span>
-          <span className="font-mono text-foreground break-all">{NEON_JWKS_URL}</span>
-        </div>
-        {neonStatus?.tested && (
-          <div className="mt-1 flex items-center gap-2 border-t border-border/40 pt-2 font-medium">
-            <span className={`inline-block h-2 w-2 rounded-full ${neonStatus.connected ? "bg-emerald-500" : "bg-destructive"}`} />
-            <span>{`Status: ${neonStatus.status}`}</span>
-            <span className="text-muted-foreground">{neonStatus.hasToken ? "• Token attached" : "• No custom token (Anonymous)"}</span>
-          </div>
-        )}
-      </div>
-
-      <form onSubmit={submitNeonJwt} className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
-        <label className="grid gap-2">
-          <span className={labelClass}>{"Identity Provider JWT (Clerk / Auth0 / Custom)"}</span>
-          <input
-            type="password"
-            value={neonJwt}
-            onChange={(event) => setNeonJwt(event.target.value)}
-            className={fieldClass}
-            placeholder={"Paste a user JWT token to test queries with active RLS..."}
-            autoComplete="off"
-          />
-        </label>
-        <button
-          type="submit"
-          className={`${primaryBtnClass} self-end`}
-        >
-          <Save className="h-4 w-4" />
-          {"Save JWT"}
-        </button>
-      </form>
-      <p className="mt-2 text-xs text-muted-foreground">
-        {"Queries run via "}
-        <code className="text-primary font-mono">@neondatabase/neon-js</code>
-        {" automatically retrieve and attach this JWT token for all database operations."}
-      </p>
-    </div>
-  );
-
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     if (!form) return;
@@ -341,40 +192,16 @@ export function Settings() {
     event.preventDefault();
     setDataSaving(true);
     try {
-      const payload = {
-        active_market_feed: dataSettings?.active_market_feed || "okx",
-        binance_api_key: binanceApiKey.trim() || undefined,
-        binance_api_secret: binanceApiSecret.trim() || undefined,
-        clear_binance_key: clearBinanceKey,
-        okx_api_key: okxApiKey.trim() || undefined,
-        okx_api_secret: okxApiSecret.trim() || undefined,
-        okx_passphrase: okxPassphrase.trim() || undefined,
-        clear_okx_key: clearOkxKey,
-        bybit_api_key: bybitApiKey.trim() || undefined,
-        bybit_api_secret: bybitApiSecret.trim() || undefined,
-        clear_bybit_key: clearBybitKey,
-        gateio_api_key: gateioApiKey.trim() || undefined,
-        gateio_api_secret: gateioApiSecret.trim() || undefined,
-        clear_gateio_key: clearGateioKey,
-      };
-      const updated = await api.updateDataSourceSettings(payload);
+      const updated = await api.updateDataSourceSettings({
+        tushare_token: tushareToken.trim() || undefined,
+        clear_tushare_token: clearTushareToken,
+      });
       setDataSettings(updated);
-      setBinanceApiKey("");
-      setBinanceApiSecret("");
-      setClearBinanceKey(false);
-      setOkxApiKey("");
-      setOkxApiSecret("");
-      setOkxPassphrase("");
-      setClearOkxKey(false);
-      setBybitApiKey("");
-      setBybitApiSecret("");
-      setClearBybitKey(false);
-      setGateioApiKey("");
-      setGateioApiSecret("");
-      setClearGateioKey(false);
-      toast.success("Exchange credentials and market feed settings saved");
+      setTushareToken("");
+      setClearTushareToken(false);
+      toast.success("Data source settings saved");
     } catch (error) {
-      toast.error(`Failed to save exchange settings: ${error instanceof Error ? error.message : "Unknown error"}`);
+      toast.error(`Failed to save data source settings: ${error instanceof Error ? error.message : "Unknown error"}`);
     } finally {
       setDataSaving(false);
     }
@@ -421,7 +248,6 @@ export function Settings() {
           <p className="max-w-3xl text-sm text-muted-foreground">{"Configure model credentials and market data source tokens for this local project."}</p>
         </div>
         {localApiAccessSection}
-        {neonDatabaseSection}
         <div className="flex min-h-32 items-center justify-center rounded-lg border bg-card p-5 text-sm text-muted-foreground">
           {settingsLoadError ? (
             <div className="text-center">
@@ -447,6 +273,9 @@ export function Settings() {
         ? `This provider uses OAuth. Run: ${selectedProvider.login_command}`
         : "This provider does not require an API key.";
   const apiKeyDisabled = !selectedProvider?.api_key_required || clearApiKey;
+  const tushareStatus = dataSettings.tushare_token_configured
+    ? "Configured"
+    : "Leave blank to keep the current token";
   const channelRows = channelStatus
     ? Object.entries(channelStatus.channels ?? {}).sort(([a], [b]) => a.localeCompare(b))
     : [];
@@ -571,8 +400,6 @@ export function Settings() {
       </div>
 
       {localApiAccessSection}
-
-      {neonDatabaseSection}
 
       {channelsSection}
 
@@ -753,290 +580,46 @@ export function Settings() {
       </form>
 
       <form onSubmit={submitDataSources} className={cardClass}>
-        <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Database className="h-4 w-4 text-primary" />
-              <h2 className="text-base font-semibold">{"Exchange Market Data & Execution"}</h2>
-            </div>
-            <p className="text-sm text-muted-foreground">{"Configure API keys and WebSocket connections for Binance, OKX, Bybit, and Gate.io."}</p>
-          </div>
+        <div className="mb-5 space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">{"Default Feed:"}</span>
-            <select
-              value={dataSettings.active_market_feed || "okx"}
-              onChange={(e) => setDataSettings({ ...dataSettings, active_market_feed: e.target.value })}
-              className={selectFieldClass}
-            >
-              <option value="okx">OKX (Fastest Perpetual)</option>
-              <option value="binance">Binance (USD-M Futures)</option>
-              <option value="bybit">Bybit (Linear V5)</option>
-              <option value="gate">Gate.io (Futures / Spot)</option>
-            </select>
+            <Database className="h-4 w-4 text-primary" />
+            <h2 className="text-base font-semibold">{"Data Source Settings"}</h2>
           </div>
+          <p className="text-sm text-muted-foreground">{"Configure optional market data credentials used by backtests and research agents."}</p>
         </div>
 
-        {/* Exchange Tabs */}
-        <div className="mb-5 flex flex-wrap gap-2 border-b border-border/40 pb-3">
-          {[
-            { id: "okx" as const, name: "OKX", configured: dataSettings.okx_configured, latency: "38ms" },
-            { id: "binance" as const, name: "Binance", configured: dataSettings.binance_configured, latency: "45ms" },
-            { id: "bybit" as const, name: "Bybit", configured: dataSettings.bybit_configured, latency: "52ms" },
-            { id: "gate" as const, name: "Gate.io", configured: dataSettings.gateio_configured, latency: "68ms" },
-          ].map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setActiveExchangeTab(item.id)}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-colors ${
-                activeExchangeTab === item.id
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "bg-muted/40 text-muted-foreground hover:bg-muted"
-              }`}
-            >
-              <span>{item.name}</span>
-              <span className={`inline-block h-2 w-2 rounded-full ${item.configured ? "bg-emerald-400 animate-pulse" : "bg-amber-400"}`} />
-              <span className="text-xs opacity-75 font-mono">({item.latency})</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
-          {/* Active Tab Form */}
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)]">
           <div className="grid gap-4">
-            {activeExchangeTab === "okx" && (
-              <>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-foreground">OKX API & Secret Credentials</span>
-                  <span className="text-xs text-muted-foreground font-mono">{dataSettings.okx_key_hint || "OKX Market Feed"}</span>
-                </div>
-                <label className="grid gap-2">
-                  <span className={labelClass}>{"OKX API Key"}</span>
-                  <div className="relative">
-                    <KeyRound className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <input
-                      type="password"
-                      value={okxApiKey}
-                      onChange={(event) => setOkxApiKey(event.target.value)}
-                      className={`${fieldClass} pl-9`}
-                      placeholder={dataSettings.okx_configured ? "Configured (Leave blank to keep)" : "Enter OKX API Key"}
-                      autoComplete="current-password"
-                      disabled={clearOkxKey}
-                    />
-                  </div>
-                </label>
-
-                <label className="grid gap-2">
-                  <span className={labelClass}>{"OKX Secret Key"}</span>
+            <label className="grid gap-2">
+              <span className={labelClass}>{"Tushare token"}</span>
+              <div className="relative">
+                <KeyRound className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="password"
+                  value={tushareToken}
+                  onChange={(event) => setTushareToken(event.target.value)}
+                  className={`${fieldClass} pl-9`}
+                  placeholder={tushareStatus}
+                  autoComplete="current-password"
+                  disabled={clearTushareToken}
+                />
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className={hintClass}>{"Used for China A-share, futures, fund, and macro data. If unset, the project falls back to AKShare where available."}</span>
+                <label className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
                   <input
-                    type="password"
-                    value={okxApiSecret}
-                    onChange={(event) => setOkxApiSecret(event.target.value)}
-                    className={fieldClass}
-                    placeholder={dataSettings.okx_configured ? "••••••••••••••••" : "Enter OKX Secret Key"}
-                    autoComplete="current-password"
-                    disabled={clearOkxKey}
+                    type="checkbox"
+                    checked={clearTushareToken}
+                    onChange={(event) => {
+                      setClearTushareToken(event.target.checked);
+                      if (event.target.checked) setTushareToken("");
+                    }}
+                    className="h-3.5 w-3.5 accent-primary"
                   />
+                  {"Clear saved Tushare token"}
                 </label>
-
-                <label className="grid gap-2">
-                  <span className={labelClass}>{"OKX Passphrase"}</span>
-                  <input
-                    type="password"
-                    value={okxPassphrase}
-                    onChange={(event) => setOkxPassphrase(event.target.value)}
-                    className={fieldClass}
-                    placeholder={dataSettings.okx_configured ? "••••••••" : "Enter OKX API Passphrase"}
-                    autoComplete="current-password"
-                    disabled={clearOkxKey}
-                  />
-                  <div className="flex items-center justify-between gap-3">
-                    <span className={hintClass}>{"Supports Public Market Feeds, L2 Book, Perpetuals & Futures."}</span>
-                    <label className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
-                      <input
-                        type="checkbox"
-                        checked={clearOkxKey}
-                        onChange={(event) => {
-                          setClearOkxKey(event.target.checked);
-                          if (event.target.checked) {
-                            setOkxApiKey("");
-                            setOkxApiSecret("");
-                            setOkxPassphrase("");
-                          }
-                        }}
-                        className="h-3.5 w-3.5 accent-primary"
-                      />
-                      {"Clear OKX key"}
-                    </label>
-                  </div>
-                </label>
-              </>
-            )}
-
-            {activeExchangeTab === "binance" && (
-              <>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-foreground">Binance USD-M & Spot Credentials</span>
-                  <span className="text-xs text-muted-foreground font-mono">{dataSettings.binance_key_hint || "Binance Public Feed"}</span>
-                </div>
-                <label className="grid gap-2">
-                  <span className={labelClass}>{"Binance API Key"}</span>
-                  <div className="relative">
-                    <KeyRound className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <input
-                      type="password"
-                      value={binanceApiKey}
-                      onChange={(event) => setBinanceApiKey(event.target.value)}
-                      className={`${fieldClass} pl-9`}
-                      placeholder={dataSettings.binance_configured ? "Configured (Leave blank to keep)" : "Enter Binance API Key"}
-                      autoComplete="current-password"
-                      disabled={clearBinanceKey}
-                    />
-                  </div>
-                </label>
-
-                <label className="grid gap-2">
-                  <span className={labelClass}>{"Binance Secret Key"}</span>
-                  <input
-                    type="password"
-                    value={binanceApiSecret}
-                    onChange={(event) => setBinanceApiSecret(event.target.value)}
-                    className={fieldClass}
-                    placeholder={dataSettings.binance_configured ? "••••••••••••••••" : "Enter Binance Secret Key"}
-                    autoComplete="current-password"
-                    disabled={clearBinanceKey}
-                  />
-                  <div className="flex items-center justify-between gap-3">
-                    <span className={hintClass}>{"Supports USD-M Futures, Spot orderbooks, and WebSocket feeds."}</span>
-                    <label className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
-                      <input
-                        type="checkbox"
-                        checked={clearBinanceKey}
-                        onChange={(event) => {
-                          setClearBinanceKey(event.target.checked);
-                          if (event.target.checked) {
-                            setBinanceApiKey("");
-                            setBinanceApiSecret("");
-                          }
-                        }}
-                        className="h-3.5 w-3.5 accent-primary"
-                      />
-                      {"Clear Binance key"}
-                    </label>
-                  </div>
-                </label>
-              </>
-            )}
-
-            {activeExchangeTab === "bybit" && (
-              <>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-foreground">Bybit V5 Unified Account Credentials</span>
-                  <span className="text-xs text-muted-foreground font-mono">{dataSettings.bybit_key_hint || "Bybit Public Feed"}</span>
-                </div>
-                <label className="grid gap-2">
-                  <span className={labelClass}>{"Bybit API Key"}</span>
-                  <div className="relative">
-                    <KeyRound className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <input
-                      type="password"
-                      value={bybitApiKey}
-                      onChange={(event) => setBybitApiKey(event.target.value)}
-                      className={`${fieldClass} pl-9`}
-                      placeholder={dataSettings.bybit_configured ? "Configured (Leave blank to keep)" : "Enter Bybit API Key"}
-                      autoComplete="current-password"
-                      disabled={clearBybitKey}
-                    />
-                  </div>
-                </label>
-
-                <label className="grid gap-2">
-                  <span className={labelClass}>{"Bybit API Secret"}</span>
-                  <input
-                    type="password"
-                    value={bybitApiSecret}
-                    onChange={(event) => setBybitApiSecret(event.target.value)}
-                    className={fieldClass}
-                    placeholder={dataSettings.bybit_configured ? "••••••••••••••••" : "Enter Bybit Secret Key"}
-                    autoComplete="current-password"
-                    disabled={clearBybitKey}
-                  />
-                  <div className="flex items-center justify-between gap-3">
-                    <span className={hintClass}>{"Supports Linear Perpetuals, Inverse Futures, and Orderbook L2 streams."}</span>
-                    <label className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
-                      <input
-                        type="checkbox"
-                        checked={clearBybitKey}
-                        onChange={(event) => {
-                          setClearBybitKey(event.target.checked);
-                          if (event.target.checked) {
-                            setBybitApiKey("");
-                            setBybitApiSecret("");
-                          }
-                        }}
-                        className="h-3.5 w-3.5 accent-primary"
-                      />
-                      {"Clear Bybit key"}
-                    </label>
-                  </div>
-                </label>
-              </>
-            )}
-
-            {activeExchangeTab === "gate" && (
-              <>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-foreground">Gate.io V4 API Credentials</span>
-                  <span className="text-xs text-muted-foreground font-mono">{dataSettings.gateio_key_hint || "Gate.io Public Feed"}</span>
-                </div>
-                <label className="grid gap-2">
-                  <span className={labelClass}>{"Gate.io API Key"}</span>
-                  <div className="relative">
-                    <KeyRound className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <input
-                      type="password"
-                      value={gateioApiKey}
-                      onChange={(event) => setGateioApiKey(event.target.value)}
-                      className={`${fieldClass} pl-9`}
-                      placeholder={dataSettings.gateio_configured ? "Configured (Leave blank to keep)" : "Enter Gate.io API Key"}
-                      autoComplete="current-password"
-                      disabled={clearGateioKey}
-                    />
-                  </div>
-                </label>
-
-                <label className="grid gap-2">
-                  <span className={labelClass}>{"Gate.io API Secret"}</span>
-                  <input
-                    type="password"
-                    value={gateioApiSecret}
-                    onChange={(event) => setGateioApiSecret(event.target.value)}
-                    className={fieldClass}
-                    placeholder={dataSettings.gateio_configured ? "••••••••••••••••" : "Enter Gate.io Secret Key"}
-                    autoComplete="current-password"
-                    disabled={clearGateioKey}
-                  />
-                  <div className="flex items-center justify-between gap-3">
-                    <span className={hintClass}>{"Supports Spot, Delivery Futures, and USDT margined perpetual contracts."}</span>
-                    <label className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
-                      <input
-                        type="checkbox"
-                        checked={clearGateioKey}
-                        onChange={(event) => {
-                          setClearGateioKey(event.target.checked);
-                          if (event.target.checked) {
-                            setGateioApiKey("");
-                            setGateioApiSecret("");
-                          }
-                        }}
-                        className="h-3.5 w-3.5 accent-primary"
-                      />
-                      {"Clear Gate.io key"}
-                    </label>
-                  </div>
-                </label>
-              </>
-            )}
+              </div>
+            </label>
 
             <div className="glass-panel rounded-xl px-3 py-2 text-xs text-muted-foreground">
               <span className="font-medium text-foreground">{i18n.t("settings.saved")}: </span>
@@ -1049,36 +632,24 @@ export function Settings() {
               className={primaryBtnClass}
             >
               {dataSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              {dataSaving ? i18n.t("settings.saving") : "Save Exchange Settings"}
+              {dataSaving ? i18n.t("settings.saving") : "Save data source settings"}
             </button>
           </div>
 
-          {/* Provider Health & Capabilities Sidebar */}
-          <div className="space-y-3">
-            <div className="glass-panel rounded-xl p-4">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <span className="text-sm font-semibold">Active Exchange Endpoints</span>
-                <span className="rounded-full bg-success/10 px-2 py-0.5 text-xs text-success font-medium">4 Providers Ready</span>
-              </div>
-              <div className="space-y-2.5 text-xs text-muted-foreground">
-                {(dataSettings.providers || []).map((p) => (
-                  <div key={p.id} className="flex items-center justify-between rounded-lg border border-border/30 bg-background/50 p-2.5">
-                    <div>
-                      <div className="font-medium text-foreground">{p.name}</div>
-                      <div className="text-[11px] text-muted-foreground">{p.capabilities.slice(0, 3).join(", ")}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-emerald-500 font-mono font-medium">{p.latency_ms}ms</div>
-                      <div className="text-[10px] text-muted-foreground">{p.status}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+          <div className="glass-panel rounded-xl p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <span className="text-sm font-medium">{"BaoStock"}</span>
+              <span className={`rounded-full px-2 py-0.5 text-xs ${dataSettings.baostock_supported ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
+                {dataSettings.baostock_supported ? "Loader available" : "No project loader"}
+              </span>
             </div>
-
-            <div className="glass-panel rounded-xl p-3.5 text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">⚡ Public Market Feed: </span>
-              Even with API keys unconfigured, the system connects directly to public high-throughput WebSocket & REST orderbook channels for BTC, ETH, SOL, and all perpetual pairs.
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>{dataSettings.baostock_message}</p>
+              <p>
+                {dataSettings.baostock_installed
+                  ? "Python package installed"
+                  : "Python package not installed"}
+              </p>
             </div>
           </div>
         </div>

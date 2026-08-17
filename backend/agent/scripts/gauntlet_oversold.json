@@ -1,0 +1,484 @@
+{
+  "splits": [
+    "split_1",
+    "split_2",
+    "split_3",
+    "split_4",
+    "split_5",
+    "split_6",
+    "split_7",
+    "split_8",
+    "split_9",
+    "split_10"
+  ],
+  "selected_per_split": {
+    "split_1": {
+      "pullback_oversold_12_35": -9.691636547371647
+    },
+    "split_2": {
+      "pullback_oversold_12_25": -5.820917993050015
+    },
+    "split_3": {
+      "pullback_oversold_12_30": 9.10549318430434
+    },
+    "split_4": {
+      "pullback_oversold_12_35": -6.315336450533628
+    },
+    "split_5": {
+      "pullback_oversold_12_25": 6.814374084986494
+    },
+    "split_6": {
+      "pullback_oversold_12_30": 11.258418235043399
+    },
+    "split_7": {
+      "pullback_oversold_12_25": 3.2528337059713537
+    },
+    "split_8": {
+      "pullback_oversold_12_25": -0.6281957476746597
+    },
+    "split_9": {
+      "pullback_oversold_12_25": -10.564605800997596
+    },
+    "split_10": {
+      "pullback_oversold_12_25": -4.529937109596426
+    }
+  },
+  "test_summary": {
+    "pullback_oversold_12_25": {
+      "total_return": -0.014181818190853476,
+      "cagr": 0.3987809753142591,
+      "max_drawdown": -0.04475475321053666,
+      "sharpe": -1.912741476726808,
+      "profit_factor": 0.9024600656440994,
+      "final_equity": 9858.181818091465,
+      "bars": 213.0
+    },
+    "pullback_oversold_12_30": {
+      "total_return": 0.07954731493733747,
+      "cagr": 22.63603739786864,
+      "max_drawdown": -0.021000181595139448,
+      "sharpe": 10.181955709673868,
+      "profit_factor": 1.4281148742541918,
+      "final_equity": 10795.473149373374,
+      "bars": 213.0
+    },
+    "pullback_oversold_12_35": {
+      "total_return": -0.07538310920604818,
+      "cagr": -0.8878198054489688,
+      "max_drawdown": -0.09443272665692704,
+      "sharpe": -8.003486498952638,
+      "profit_factor": 0.7185472715275216,
+      "final_equity": 9246.168907939518,
+      "bars": 213.0
+    },
+    "buy_hold": {
+      "total_return": 0.030482547007506577,
+      "cagr": 142.54347459885747,
+      "max_drawdown": -0.08621847664780033,
+      "sharpe": 2.5090517055366277,
+      "profit_factor": 1.0943223023297883,
+      "final_equity": 10304.825470075066,
+      "bars": 213.0
+    },
+    "equal_weight": {
+      "total_return": 0.027982150171436272,
+      "cagr": 111.85666148500736,
+      "max_drawdown": -0.08221258904041176,
+      "sharpe": 2.8882208593002217,
+      "profit_factor": 1.1068910495596704,
+      "final_equity": 10279.821501714363,
+      "bars": 213.0
+    },
+    "random": {
+      "total_return": 0.01410543269987501,
+      "cagr": 55.44110463293326,
+      "max_drawdown": -0.08504806469993739,
+      "sharpe": 1.9177619156587862,
+      "profit_factor": 1.0730109710889997,
+      "final_equity": 10141.05432699875,
+      "bars": 213.0
+    }
+  },
+  "per_split": {
+    "split_2": {
+      "pullback_oversold_12_25": {
+        "total_return": -0.03530605418704469,
+        "cagr": -0.7735540546929269,
+        "max_drawdown": -0.04329704903004116,
+        "sharpe": -5.820917993050015,
+        "profit_factor": 0.7769737856060019,
+        "final_equity": 9646.939458129553,
+        "bars": 213
+      },
+      "buy_hold": {
+        "total_return": -0.019645237120325176,
+        "cagr": -0.5594959263531191,
+        "max_drawdown": -0.08750267186467456,
+        "sharpe": -1.1309518442916835,
+        "profit_factor": 0.9647697055753977,
+        "final_equity": 9803.547628796749,
+        "bars": 213
+      },
+      "equal_weight": {
+        "total_return": -0.018992295038426144,
+        "cagr": -0.547208731699072,
+        "max_drawdown": -0.08732567300928858,
+        "sharpe": -1.0854863320658015,
+        "profit_factor": 0.9662051292783628,
+        "final_equity": 9810.077049615738,
+        "bars": 213
+      },
+      "random": {
+        "total_return": -0.026378185739903026,
+        "cagr": -0.6686566482555116,
+        "max_drawdown": -0.08440406954028164,
+        "sharpe": -1.6881799386841405,
+        "profit_factor": 0.948501177893943,
+        "final_equity": 9736.21814260097,
+        "bars": 213
+      }
+    },
+    "split_5": {
+      "pullback_oversold_12_25": {
+        "total_return": 0.03839945192373162,
+        "cagr": 3.7445107404504334,
+        "max_drawdown": -0.028734410950218222,
+        "sharpe": 6.814374084986494,
+        "profit_factor": 1.309963830866841,
+        "final_equity": 10383.994519237316,
+        "bars": 213
+      },
+      "buy_hold": {
+        "total_return": 0.003346194071113695,
+        "cagr": 0.14801738862227043,
+        "max_drawdown": -0.0966534648376235,
+        "sharpe": 0.5321519820809211,
+        "profit_factor": 1.015243781894737,
+        "final_equity": 10033.461940711137,
+        "bars": 213
+      },
+      "equal_weight": {
+        "total_return": 0.003752815604574078,
+        "cagr": 0.16739985084909748,
+        "max_drawdown": -0.09465111548549938,
+        "sharpe": 0.5719521876852701,
+        "profit_factor": 1.0163768542934373,
+        "final_equity": 10037.52815604574,
+        "bars": 213
+      },
+      "random": {
+        "total_return": -0.0072776518050988726,
+        "cagr": -0.2605271149376266,
+        "max_drawdown": -0.09593686515313861,
+        "sharpe": -0.4801515732958957,
+        "profit_factor": 0.9861581890546184,
+        "final_equity": 9927.223481949011,
+        "bars": 213
+      }
+    },
+    "split_7": {
+      "pullback_oversold_12_25": {
+        "total_return": 0.01926208512773453,
+        "cagr": 1.1997755977756173,
+        "max_drawdown": -0.024281194905864337,
+        "sharpe": 3.2528337059713537,
+        "profit_factor": 1.1419305241490305,
+        "final_equity": 10192.620851277345,
+        "bars": 213
+      },
+      "buy_hold": {
+        "total_return": -0.0013563258714659465,
+        "cagr": -0.05453882087518491,
+        "max_drawdown": -0.07615679704293483,
+        "sharpe": 0.16394952816655536,
+        "profit_factor": 1.00500108102669,
+        "final_equity": 9986.43674128534,
+        "bars": 213
+      },
+      "equal_weight": {
+        "total_return": -0.015326493007088327,
+        "cagr": -0.471760539534961,
+        "max_drawdown": -0.08471943757652005,
+        "sharpe": -0.9386690915397451,
+        "profit_factor": 0.9716788197650565,
+        "final_equity": 9846.735069929116,
+        "bars": 213
+      },
+      "random": {
+        "total_return": -0.020318441005408694,
+        "cagr": -0.5718236148397071,
+        "max_drawdown": -0.09496058118102212,
+        "sharpe": -1.364680119333125,
+        "profit_factor": 0.9606694661873618,
+        "final_equity": 9796.815589945913,
+        "bars": 213
+      }
+    },
+    "split_8": {
+      "pullback_oversold_12_25": {
+        "total_return": -0.0066749531906085124,
+        "cagr": -0.24174743040349678,
+        "max_drawdown": -0.05251383647232724,
+        "sharpe": -0.6281957476746597,
+        "profit_factor": 0.9731197725075856,
+        "final_equity": 9933.250468093915,
+        "bars": 213
+      },
+      "buy_hold": {
+        "total_return": 0.04496408262261009,
+        "cagr": 5.155775077573245,
+        "max_drawdown": -0.11692290203124449,
+        "sharpe": 2.1303162154980537,
+        "profit_factor": 1.0643489147467668,
+        "final_equity": 10449.640826226101,
+        "bars": 213
+      },
+      "equal_weight": {
+        "total_return": 0.07262941361271813,
+        "cagr": 17.121939141519494,
+        "max_drawdown": -0.08295532234178817,
+        "sharpe": 3.735285797259791,
+        "profit_factor": 1.1163639829373186,
+        "final_equity": 10726.294136127182,
+        "bars": 213
+      },
+      "random": {
+        "total_return": 0.05693789482532119,
+        "cagr": 8.856942303434153,
+        "max_drawdown": -0.09314969992711997,
+        "sharpe": 2.9938623322517697,
+        "profit_factor": 1.0924188705135893,
+        "final_equity": 10569.378948253212,
+        "bars": 213
+      }
+    },
+    "split_9": {
+      "pullback_oversold_12_25": {
+        "total_return": -0.08070808463265688,
+        "cagr": -0.9691063949423799,
+        "max_drawdown": -0.08070808463265694,
+        "sharpe": -10.564605800997596,
+        "profit_factor": 0.3819692126125105,
+        "final_equity": 9192.91915367343,
+        "bars": 213
+      },
+      "buy_hold": {
+        "total_return": -0.014709528415173923,
+        "cagr": -0.4579101046913555,
+        "max_drawdown": -0.07514488063519537,
+        "sharpe": -0.5014067211861716,
+        "profit_factor": 0.9839258800859619,
+        "final_equity": 9852.90471584826,
+        "bars": 213
+      },
+      "equal_weight": {
+        "total_return": -0.015268788034897396,
+        "cagr": -0.4704798812540194,
+        "max_drawdown": -0.07858551184454503,
+        "sharpe": -0.5552253339528855,
+        "profit_factor": 0.9820260925678349,
+        "final_equity": 9847.312119651026,
+        "bars": 213
+      },
+      "random": {
+        "total_return": -0.01791498650722312,
+        "cagr": -0.5262009149445248,
+        "max_drawdown": -0.08795408007940306,
+        "sharpe": -0.6571303255950048,
+        "profit_factor": 0.9787122461410691,
+        "final_equity": 9820.850134927769,
+        "bars": 213
+      }
+    },
+    "split_10": {
+      "pullback_oversold_12_25": {
+        "total_return": -0.020063354186276916,
+        "cagr": -0.5671926063016922,
+        "max_drawdown": -0.03899394327211208,
+        "sharpe": -4.529937109596426,
+        "profit_factor": 0.8308032681226265,
+        "final_equity": 9799.36645813723,
+        "bars": 213
+      },
+      "buy_hold": {
+        "total_return": 0.1576390735040718,
+        "cagr": 422.537289622345,
+        "max_drawdown": -0.055775051002096974,
+        "sharpe": 10.160838472222448,
+        "profit_factor": 1.3634625475032862,
+        "final_equity": 11576.390735040717,
+        "bars": 213
+      },
+      "equal_weight": {
+        "total_return": 0.1051495102866713,
+        "cagr": 61.25725392278903,
+        "max_drawdown": -0.05620119255262213,
+        "sharpe": 8.278600953035536,
+        "profit_factor": 1.261610861748702,
+        "final_equity": 11051.495102866713,
+        "bars": 213
+      },
+      "random": {
+        "total_return": 0.06026725641865971,
+        "cagr": 10.224872725969986,
+        "max_drawdown": -0.05590853089971138,
+        "sharpe": 4.422353349826525,
+        "profit_factor": 1.1321921519278104,
+        "final_equity": 10602.672564186596,
+        "bars": 213
+      }
+    },
+    "split_3": {
+      "pullback_oversold_12_30": {
+        "total_return": 0.07944423867444983,
+        "cagr": 22.542785507470924,
+        "max_drawdown": -0.02616552654966943,
+        "sharpe": 9.10549318430434,
+        "profit_factor": 1.3139662983312965,
+        "final_equity": 10794.442386744498,
+        "bars": 213
+      },
+      "buy_hold": {
+        "total_return": 0.15016935754142446,
+        "cagr": 323.13292463039244,
+        "max_drawdown": -0.040514909048581196,
+        "sharpe": 12.813796524557034,
+        "profit_factor": 1.423410495434658,
+        "final_equity": 11501.693575414245,
+        "bars": 213
+      },
+      "equal_weight": {
+        "total_return": 0.15703146339003426,
+        "cagr": 413.4481348453656,
+        "max_drawdown": -0.03892023955536259,
+        "sharpe": 13.440430325375631,
+        "profit_factor": 1.450248323062932,
+        "final_equity": 11570.314633900343,
+        "bars": 213
+      },
+      "random": {
+        "total_return": 0.1050147813952067,
+        "cagr": 60.944407702859614,
+        "max_drawdown": -0.0358071269291022,
+        "sharpe": 9.469426629038082,
+        "profit_factor": 1.3001325068995295,
+        "final_equity": 11050.147813952068,
+        "bars": 213
+      }
+    },
+    "split_6": {
+      "pullback_oversold_12_30": {
+        "total_return": 0.0796503912002251,
+        "cagr": 22.72928928826636,
+        "max_drawdown": -0.015834836640609466,
+        "sharpe": 11.258418235043399,
+        "profit_factor": 1.542263450177087,
+        "final_equity": 10796.503912002252,
+        "bars": 213
+      },
+      "buy_hold": {
+        "total_return": 0.1709143335511214,
+        "cagr": 677.4373883551142,
+        "max_drawdown": -0.04644316821921957,
+        "sharpe": 12.01120456175471,
+        "profit_factor": 1.4247265545907541,
+        "final_equity": 11709.143335511215,
+        "bars": 213
+      },
+      "equal_weight": {
+        "total_return": 0.16885904462519696,
+        "cagr": 629.9324124749953,
+        "max_drawdown": -0.03552834160693902,
+        "sharpe": 15.708043868314226,
+        "profit_factor": 1.5855733294957697,
+        "final_equity": 11688.59044625197,
+        "bars": 213
+      },
+      "random": {
+        "total_return": 0.16109698631274383,
+        "cagr": 478.0879940701931,
+        "max_drawdown": -0.03416139434931234,
+        "sharpe": 15.242979725634306,
+        "profit_factor": 1.5694195000787594,
+        "final_equity": 11610.969863127439,
+        "bars": 213
+      }
+    },
+    "split_1": {
+      "pullback_oversold_12_35": {
+        "total_return": -0.11455204779494199,
+        "cagr": -0.9934425219118249,
+        "max_drawdown": -0.11455204779494198,
+        "sharpe": -9.691636547371647,
+        "profit_factor": 0.6813906848935462,
+        "final_equity": 8854.47952205058,
+        "bars": 213
+      },
+      "buy_hold": {
+        "total_return": -0.13043703174023158,
+        "cagr": -0.9968963480609153,
+        "max_drawdown": -0.19976499047937687,
+        "sharpe": -5.695835016676056,
+        "profit_factor": 0.8470335140309321,
+        "final_equity": 8695.629682597684,
+        "bars": 213
+      },
+      "equal_weight": {
+        "total_return": -0.12904578288083102,
+        "cagr": -0.9966844040722546,
+        "max_drawdown": -0.19814633732008216,
+        "sharpe": -5.619033321620355,
+        "profit_factor": 0.8490252297163088,
+        "final_equity": 8709.54217119169,
+        "bars": 213
+      },
+      "random": {
+        "total_return": -0.1433480829564665,
+        "cagr": -0.998327266608122,
+        "max_drawdown": -0.20307139834230556,
+        "sharpe": -6.376839513802034,
+        "profit_factor": 0.8312209857822277,
+        "final_equity": 8566.519170435335,
+        "bars": 213
+      }
+    },
+    "split_4": {
+      "pullback_oversold_12_35": {
+        "total_return": -0.03621417061715437,
+        "cagr": -0.7821970889861125,
+        "max_drawdown": -0.07431340551891208,
+        "sharpe": -6.315336450533628,
+        "profit_factor": 0.7557038581614971,
+        "final_equity": 9637.858293828456,
+        "bars": 213
+      },
+      "buy_hold": {
+        "total_return": -0.056059448068079054,
+        "cagr": -0.9078078854917323,
+        "max_drawdown": -0.06730593131705591,
+        "sharpe": -5.3935466467595345,
+        "profit_factor": 0.8513005484086986,
+        "final_equity": 9439.405519319209,
+        "bars": 213
+      },
+      "equal_weight": {
+        "total_return": -0.048967386843589145,
+        "cagr": -0.8743918288846788,
+        "max_drawdown": -0.06509271911147044,
+        "sharpe": -4.653690459489447,
+        "profit_factor": 0.8698018727309806,
+        "final_equity": 9510.326131564108,
+        "bars": 213
+      },
+      "random": {
+        "total_return": -0.027025243939081123,
+        "cagr": -0.6776349135387137,
+        "max_drawdown": -0.06512690059797714,
+        "sharpe": -2.3840214094526195,
+        "profit_factor": 0.9306846164110872,
+        "final_equity": 9729.747560609188,
+        "bars": 213
+      }
+    }
+  }
+}

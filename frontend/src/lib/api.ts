@@ -87,25 +87,6 @@ export const api = {
   listRuns: (limit?: number) => request<RunListItem[]>(`/runs${limit ? `?limit=${encodeURIComponent(String(limit))}` : ""}`),
   listAutopilotEvidenceRuns: (limit?: number) =>
     request<AutopilotEvidenceRunItem[]>(`/autopilot-runs${limit ? `?limit=${encodeURIComponent(String(limit))}` : ""}`),
-  listGridResearchDatasets: () =>
-    request<GridResearchDatasetSummaryListItem[]>("/grid-research/datasets"),
-  getGridResearchDataset: (id: string) =>
-    request<GridResearchDatasetDetail>(`/grid-research/datasets/${encodeURIComponent(id)}`),
-  sampleGridResearch: (params: {
-    symbol?: string;
-    cycles?: number;
-    interval?: string;
-    grid_lower?: number;
-    grid_upper?: number;
-    grid_count?: number;
-    leverage?: number;
-  }) =>
-    request<GridResearchDatasetDetail>("/grid-research/sample", {
-      method: "POST",
-      body: JSON.stringify(params),
-    }),
-  exportGridResearchUrl: (datasetId: string, format: "csv" | "json" = "csv") =>
-    `/grid-research/export?dataset_id=${encodeURIComponent(datasetId)}&format=${format}`,
   getRun: (id: string, params: RunDetailParams = {}) => {
     const q = new URLSearchParams();
     if (params.chart_payload) q.set("chart_payload", params.chart_payload);
@@ -262,32 +243,7 @@ export const api = {
   getPaperSessionLivePrices: (sessionId: string) =>
     request<PaperSessionLivePrices>(`/paper-sessions/${encodeURIComponent(sessionId)}/live-prices`),
   getShadowComparison: () => request<ShadowComparisonRow[]>("/paper-sessions/shadow-comparison"),
-  getRatiosHistory: () => request<RatiosHistoryResponse>("/paper-sessions/ratios-history"),
   getPaperTradingNotifications: (after?: string) => request<Array<{ id: string; title: string; message: string; severity: string; created_at: string }>>(`/paper-trading/notifications${after ? `?after=${encodeURIComponent(after)}` : ""}`),
-  acceleratePaperTrades: (params?: { sessionId?: string; count?: number; isTargetAbsolute?: boolean }) =>
-    request<{ status: string; updated: number; sessions: Array<{ id: string; trade_count: number; realized_pnl: number }> }>("/paper-sessions/accelerate", {
-      method: "POST",
-      body: JSON.stringify(params || {}),
-    }),
-  switchTestnet: () =>
-    request<{
-      ok: boolean;
-      ready: boolean;
-      message: string;
-      min_trades_required: number;
-      total_trades: number;
-      workers: Array<{ id: string; trade_count: number; ready: boolean; needed: number; realized_pnl: number }>;
-      testnet_account?: {
-        account_id: string;
-        exchange: string;
-        status: string;
-        sandbox_active: boolean;
-        environment: string;
-        migrated_at: string;
-        active_workers: number;
-        initial_testnet_capital: number;
-      };
-    }>("/paper-sessions/switch-testnet", { method: "POST" }),
 };
 
 // --- Swarm types ---
@@ -350,46 +306,18 @@ export interface UpdateLLMSettingsRequest {
   reasoning_effort?: string;
 }
 
-export interface ExchangeProviderInfo {
-  id: string;
-  name: string;
-  status: string;
-  latency_ms: number;
-  configured: boolean;
-  capabilities: string[];
-  public_access: boolean;
-  default_url: string;
-}
-
 export interface DataSourceSettings {
-  active_market_feed: string;
-  binance_configured: boolean;
-  binance_key_hint?: string | null;
-  okx_configured: boolean;
-  okx_key_hint?: string | null;
-  bybit_configured: boolean;
-  bybit_key_hint?: string | null;
-  gateio_configured: boolean;
-  gateio_key_hint?: string | null;
-  providers: ExchangeProviderInfo[];
+  tushare_token_configured: boolean;
+  tushare_token_hint?: string | null;
+  baostock_supported: boolean;
+  baostock_installed: boolean;
+  baostock_message: string;
   env_path: string;
 }
 
 export interface UpdateDataSourceSettingsRequest {
-  active_market_feed?: string;
-  binance_api_key?: string;
-  binance_api_secret?: string;
-  clear_binance_key?: boolean;
-  okx_api_key?: string;
-  okx_api_secret?: string;
-  okx_passphrase?: string;
-  clear_okx_key?: boolean;
-  bybit_api_key?: string;
-  bybit_api_secret?: string;
-  clear_bybit_key?: boolean;
-  gateio_api_key?: string;
-  gateio_api_secret?: string;
-  clear_gateio_key?: boolean;
+  tushare_token?: string;
+  clear_tushare_token?: boolean;
 }
 
 export interface ChannelAdapterStatus {
@@ -451,122 +379,13 @@ export interface AutopilotEvidenceRunItem {
   provenance_valid: boolean;
   has_trades: boolean;
   statistically_evaluable: boolean;
-  statistical_status?: "insufficient" | "preliminary" | "evaluable" | "strong_sample" | "not evaluable" | "tuning-quality";
   hypothesis_supported: boolean | null;
   run_purpose: string;
   trade_count?: number;
   total_return?: number;
   sharpe?: number;
-  is_sharpe_valid?: boolean;
   generated_at?: string;
   signal_engine_sha256?: string;
-}
-
-export interface GridResearchDatasetSummaryListItem {
-  dataset_id: string;
-  symbol: string;
-  interval: string;
-  cycle_count: number;
-  statistical_status: "insufficient" | "exploratory" | "evaluable" | "tuning-quality";
-  status_explanation: string;
-  date_range: {
-    start: string;
-    end: string;
-  };
-  overall_expectancy: {
-    mean_bps: number;
-    mean_pnl: number;
-    sample_std: number;
-    standard_error: number;
-    ci_95_lower: number;
-    ci_95_upper: number;
-    t_stat: number;
-  };
-  accounting_summary: {
-    gross_pnl: number;
-    maker_fees: number;
-    taker_fees: number;
-    slippage: number;
-    funding_received: number;
-    funding_paid: number;
-    net_pnl: number;
-    net_bps: number;
-  };
-  regime_summary: Record<string, { count: number; mean_bps: number; win_rate: number }>;
-}
-
-export interface GridResearchDatasetDetail extends GridResearchDatasetSummaryListItem {
-  regime_breakdown: Record<
-    string,
-    {
-      regime: string;
-      count: number;
-      percentOfTotal: number;
-      meanNetBps: number;
-      meanNetPnl: number;
-      winRate: number;
-      sampleStd: number;
-      standardError: number;
-      ciLower: number;
-      ciUpper: number;
-      grossPnlTotal: number;
-      feesTotal: number;
-      slippageTotal: number;
-      fundingTotal: number;
-      netPnlTotal: number;
-    }
-  >;
-  events_sample: Array<{
-    timestamp: number;
-    symbol: string;
-    interval: string;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume: number;
-    turnover: number;
-    mark_price: number;
-    index_price: number;
-    funding_rate: number;
-    next_funding_time: number;
-    open_interest: number;
-    best_bid: number;
-    best_ask: number;
-    spread_bps: number;
-    realized_volatility: number;
-    ATR: number;
-    RSI: number;
-    MA_fast: number;
-    MA_slow: number;
-    regime: string;
-    grid_lower: number;
-    grid_upper: number;
-    grid_count: number;
-    grid_spacing: number;
-    grid_type: "arithmetic" | "geometric";
-    side: "BUY" | "SELL" | "LONG" | "SHORT";
-    grid_index: number;
-    entry_price: number;
-    exit_price: number;
-    quantity: number;
-    notional: number;
-    maker_fee: number;
-    taker_fee: number;
-    funding_paid_received: number;
-    slippage: number;
-    gross_pnl: number;
-    net_pnl: number;
-    margin_used: number;
-    free_margin: number;
-    leverage: number;
-    liquidation_price: number;
-    liquidation_distance_pct: number;
-    reason_opened: string;
-    reason_closed: string;
-    duration_ms: number;
-    strategy_version: string;
-  }>;
 }
 
 export interface PriceBar {
@@ -1395,11 +1214,6 @@ export interface PaperSessionTradeStatsRow {
   avg_win: number | null;
   avg_loss: number | null;
   profit_factor: number | null;
-  sharpe_ratio?: number | null;
-  sortino_ratio?: number | null;
-  calmar_ratio?: number | null;
-  downside_deviation?: number | null;
-  annualized_volatility?: number | null;
   gross_profit_factor?: number | null;
   expectancy?: number | null;
   fees_paid: number;
@@ -1560,40 +1374,3 @@ export interface MessageItem {
   linked_attempt_id?: string;
   metadata?: Record<string, unknown>;
 }
-
-// Sharpe & Sortino time series types
-export interface StrategyRatioPoint {
-  time: string;
-  timestamp?: number;
-  equity: number;
-  sharpe: number;
-  sortino: number;
-  downside_dev: number;
-  spread: number;
-  sample_size: number;
-  sample_status: "insufficient" | "preliminary" | "evaluable" | "tuning-quality";
-  rolling_sharpe?: number;
-  rolling_sortino?: number;
-}
-
-export interface StrategyRatioHistory {
-  strategy_id: string;
-  name: string;
-  category: string;
-  role: "control" | "candidate" | "historical";
-  leverage: number;
-  current_sharpe: number;
-  current_sortino: number;
-  spread: number;
-  max_drawdown: number;
-  win_rate: number;
-  total_trades: number;
-  sample_status: "insufficient" | "preliminary" | "evaluable" | "tuning-quality";
-  series: StrategyRatioPoint[];
-}
-
-export interface RatiosHistoryResponse {
-  timestamp: string;
-  strategies: StrategyRatioHistory[];
-}
-

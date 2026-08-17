@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, isFuturesClosedTrade, type PaperDecisionHealth, type PaperDecisionHealthWorker, type PaperProviderHealth, type PaperSessionSummary, type PositionMetadata } from "@/lib/api";
 import { toast } from "sonner";
-import { Shield, Scale, Zap, CheckCircle2, AlertTriangle, ArrowRight, Server } from "lucide-react";
-import { SharpeSortinoTrackingChart } from "@/components/charts/SharpeSortinoTrackingChart";
 
 const SESSION_POLL_INTERVAL_MS = 5_000;
-const NOTIFICATION_POLL_INTERVAL_MS = 15_000;
+const NOTIFICATION_POLL_INTERVAL_MS = 5_000;
 const HEARTBEAT_STALE_AFTER_MS = 20 * 60_000;
 export const ALLOWED_LEVERAGE = [5, 10] as const;
 
@@ -572,342 +570,6 @@ const HealthRing: React.FC<{ marginUsagePct: number | null; leveraged: boolean }
   );
 };
 
-// ─── Risk-Adjusted Return Metrics & Components (Sharpe / Sortino) ────
-
-export interface RiskAdjustedMetrics {
-  sharpe: number | null;
-  sortino: number | null;
-  calmar: number | null;
-  annualVol: number | null;
-  downsideVol: number | null;
-  upsideVol: number | null;
-  upsideDownsideRatio: number | null;
-  sharpeRating: "Exceptional (>3.0)" | "Very Good (2.0-3.0)" | "Good (1.0-2.0)" | "Suboptimal (<1.0)" | "Insufficient Data";
-  sortinoRating: "Exceptional Asymmetry" | "Strong Positive Skew" | "Balanced" | "Downside Heavy" | "Insufficient Data";
-  sharpeColor: string;
-  sortinoColor: string;
-  sharpeScorePct: number;
-  sortinoScorePct: number;
-  sampleCount: number;
-}
-
-export function computeRiskAdjustedMetrics(s: PaperSessionSummary): RiskAdjustedMetrics {
-  const overall = s.trade_stats?.overall;
-  const pnlPct = finiteNumber(s.latest_mark?.pnl_pct);
-  const maxDd = finiteNumber(s.max_drawdown);
-  const calmarRatio = pnlPct != null && maxDd != null && maxDd > 0 ? Number((pnlPct / maxDd).toFixed(2)) : null;
-
-  if (overall?.sharpe_ratio != null && overall?.sortino_ratio != null) {
-    const sharpe = overall.sharpe_ratio;
-    const sortino = overall.sortino_ratio;
-    const annualVol = overall.annualized_volatility ?? 0.184;
-    const downsideVol = overall.downside_deviation ?? 0.012;
-    const upsideVol = annualVol > downsideVol ? Math.sqrt(Math.max(0, Math.pow(annualVol, 2) - Math.pow(downsideVol, 2))) : annualVol;
-    const ratio = downsideVol > 0 ? Number((upsideVol / downsideVol).toFixed(2)) : null;
-
-    const sharpeRating = sharpe >= 3.0 ? "Exceptional (>3.0)" : sharpe >= 2.0 ? "Very Good (2.0-3.0)" : sharpe >= 1.0 ? "Good (1.0-2.0)" : "Suboptimal (<1.0)";
-    const sortinoRating = sortino >= 3.5 ? "Exceptional Asymmetry" : sortino >= 2.5 ? "Strong Positive Skew" : sortino >= 1.2 ? "Balanced" : "Downside Heavy";
-    const sharpeColor = sharpe >= 2.0 ? "text-emerald-400" : sharpe >= 1.0 ? "text-sky-400" : "text-amber-400";
-    const sortinoColor = sortino >= 2.5 ? "text-emerald-400" : sortino >= 1.5 ? "text-sky-400" : "text-amber-400";
-
-    return {
-      sharpe,
-      sortino,
-      calmar: overall.calmar_ratio ?? calmarRatio,
-      annualVol,
-      downsideVol,
-      upsideVol,
-      upsideDownsideRatio: ratio,
-      sharpeRating,
-      sortinoRating,
-      sharpeColor,
-      sortinoColor,
-      sharpeScorePct: Math.min(100, Math.max(0, Math.round((sharpe / 3.5) * 100))),
-      sortinoScorePct: Math.min(100, Math.max(0, Math.round((sortino / 4.5) * 100))),
-      sampleCount: s.trade_count || 24,
-    };
-  }
-
-  // Derive dynamically from equity curve points
-  const points = (s.equity_curve ?? [])
-    .map((p) => finiteNumber(p.equity))
-    .filter((e): e is number => e !== null);
-
-  if (points.length < 3) {
-    return {
-      sharpe: null,
-      sortino: null,
-      calmar: calmarRatio,
-      annualVol: null,
-      downsideVol: null,
-      upsideVol: null,
-      upsideDownsideRatio: null,
-      sharpeRating: "Insufficient Data",
-      sortinoRating: "Insufficient Data",
-      sharpeColor: "text-gray-500",
-      sortinoColor: "text-gray-500",
-      sharpeScorePct: 0,
-      sortinoScorePct: 0,
-      sampleCount: points.length,
-    };
-  }
-
-  const returns: number[] = [];
-  for (let i = 1; i < points.length; i++) {
-    if (points[i - 1] > 0) {
-      returns.push((points[i] - points[i - 1]) / points[i - 1]);
-    }
-  }
-
-  if (returns.length < 2) {
-    return {
-      sharpe: null,
-      sortino: null,
-      calmar: calmarRatio,
-      annualVol: null,
-      downsideVol: null,
-      upsideVol: null,
-      upsideDownsideRatio: null,
-      sharpeRating: "Insufficient Data",
-      sortinoRating: "Insufficient Data",
-      sharpeColor: "text-gray-500",
-      sortinoColor: "text-gray-500",
-      sharpeScorePct: 0,
-      sortinoScorePct: 0,
-      sampleCount: returns.length,
-    };
-  }
-
-  const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
-  const variance = returns.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (returns.length - 1);
-  const std = Math.sqrt(variance);
-  const downsideVar = returns.reduce((a, b) => a + Math.pow(Math.min(0, b), 2), 0) / returns.length;
-  const downsideStd = Math.sqrt(downsideVar);
-  const annualFactor = 187.18; // approx sqrt(35040) for 15m interval annualization
-
-  const sharpe = std > 0 ? Number(((mean / std) * annualFactor).toFixed(2)) : null;
-  const sortino = downsideStd > 0 ? Number(((mean / downsideStd) * annualFactor).toFixed(2)) : (mean > 0 ? 5.0 : null);
-  const annualVol = std > 0 ? Number((std * annualFactor).toFixed(4)) : null;
-  const downsideVol = downsideStd > 0 ? Number((downsideStd * annualFactor).toFixed(4)) : null;
-  const upsideVol = annualVol != null && downsideVol != null && annualVol > downsideVol
-    ? Number(Math.sqrt(Math.pow(annualVol, 2) - Math.pow(downsideVol, 2)).toFixed(4))
-    : annualVol;
-  const ratio = upsideVol != null && downsideVol != null && downsideVol > 0 ? Number((upsideVol / downsideVol).toFixed(2)) : null;
-
-  const sharpeRating = sharpe == null ? "Insufficient Data" : sharpe >= 3.0 ? "Exceptional (>3.0)" : sharpe >= 2.0 ? "Very Good (2.0-3.0)" : sharpe >= 1.0 ? "Good (1.0-2.0)" : "Suboptimal (<1.0)";
-  const sortinoRating = sortino == null ? "Insufficient Data" : sortino >= 3.5 ? "Exceptional Asymmetry" : sortino >= 2.5 ? "Strong Positive Skew" : sortino >= 1.2 ? "Balanced" : "Downside Heavy";
-  const sharpeColor = sharpe == null ? "text-gray-500" : sharpe >= 2.0 ? "text-emerald-400" : sharpe >= 1.0 ? "text-sky-400" : "text-amber-400";
-  const sortinoColor = sortino == null ? "text-gray-500" : sortino >= 2.5 ? "text-emerald-400" : sortino >= 1.5 ? "text-sky-400" : "text-amber-400";
-
-  return {
-    sharpe,
-    sortino,
-    calmar: calmarRatio,
-    annualVol,
-    downsideVol,
-    upsideVol,
-    upsideDownsideRatio: ratio,
-    sharpeRating,
-    sortinoRating,
-    sharpeColor,
-    sortinoColor,
-    sharpeScorePct: sharpe != null ? Math.min(100, Math.max(0, Math.round((sharpe / 3.5) * 100))) : 0,
-    sortinoScorePct: sortino != null ? Math.min(100, Math.max(0, Math.round((sortino / 4.5) * 100))) : 0,
-    sampleCount: returns.length,
-  };
-}
-
-const RiskAdjustedSection: React.FC<{
-  metrics: RiskAdjustedMetrics;
-  strategyId: string;
-  timeframe: string;
-  leverage: number;
-  maxDrawdown: number | null;
-}> = ({ metrics, strategyId, timeframe, leverage, maxDrawdown }) => {
-  return (
-    <section className="mb-5 rounded-xl border border-gray-800 bg-gray-900/80 p-5" aria-label="Risk-adjusted return analysis">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-gray-800 pb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <Scale className="h-4 w-4" />
-            </span>
-            <h2 className="text-lg font-bold text-white">Risk-Adjusted Performance & Ratio Analytics</h2>
-            <span className="rounded border border-emerald-800 bg-emerald-950/40 px-2 py-0.5 text-xs font-semibold text-emerald-300">
-              Active Strategy: {strategyId} ({timeframe} · {leverage}x)
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-gray-400">
-            Measures how efficiently the strategy generates excess returns per unit of total risk (Sharpe) and downside variance (Sortino).
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <span className="text-[11px] uppercase tracking-wider text-gray-500">Quality Assessment</span>
-            <p className={cn("text-xs font-bold", metrics.sharpeColor)}>{metrics.sharpeRating}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Sharpe Ratio Card */}
-        <div className="rounded-xl border border-gray-800/90 bg-gray-950/60 p-4 transition-all hover:border-gray-700">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Sharpe Ratio</span>
-            <span className={cn("rounded border px-2 py-0.5 text-[11px] font-bold", metrics.sharpe != null && metrics.sharpe >= 2 ? "border-emerald-800 bg-emerald-950/40 text-emerald-300" : "border-gray-800 bg-gray-900 text-gray-400")}>
-              {metrics.sharpeRating}
-            </span>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className={cn("text-3xl font-extrabold tracking-tight", metrics.sharpeColor)}>
-              {metrics.sharpe != null ? metrics.sharpe.toFixed(2) : "—"}
-            </span>
-            <span className="text-xs text-gray-500">annualized</span>
-          </div>
-
-          {/* Meter bar */}
-          <div className="mt-3">
-            <div className="flex justify-between text-[10px] text-gray-500 mb-1">
-              <span>0.0 (Sub)</span>
-              <span>1.0 (Good)</span>
-              <span>2.0 (Strong)</span>
-              <span>3.0+ (Elite)</span>
-            </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-800">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-blue-500 via-emerald-500 to-teal-400 transition-all duration-500"
-                style={{ width: `${metrics.sharpeScorePct}%` }}
-              />
-            </div>
-          </div>
-
-          <div className="mt-3.5 border-t border-gray-800/80 pt-2.5 text-[11px] text-gray-400 flex items-center justify-between">
-            <span className="text-gray-500">Formula</span>
-            <span className="font-mono text-gray-300">(R - Rf) / σ_total</span>
-          </div>
-          <p className="mt-1 text-[11px] text-gray-500 leading-tight">
-            Penalizes all deviations from mean return equally, both upward spikes and downward drops.
-          </p>
-        </div>
-
-        {/* Sortino Ratio Card */}
-        <div className="rounded-xl border border-gray-800/90 bg-gray-950/60 p-4 transition-all hover:border-gray-700">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Sortino Ratio</span>
-            <span className={cn("rounded border px-2 py-0.5 text-[11px] font-bold", metrics.sortino != null && metrics.sortino >= 2.5 ? "border-emerald-800 bg-emerald-950/40 text-emerald-300" : "border-gray-800 bg-gray-900 text-gray-400")}>
-              {metrics.sortinoRating}
-            </span>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className={cn("text-3xl font-extrabold tracking-tight", metrics.sortinoColor)}>
-              {metrics.sortino != null ? metrics.sortino.toFixed(2) : "—"}
-            </span>
-            <span className="text-xs text-gray-500">annualized</span>
-          </div>
-
-          {/* Meter bar */}
-          <div className="mt-3">
-            <div className="flex justify-between text-[10px] text-gray-500 mb-1">
-              <span>0.0</span>
-              <span>1.5 (Standard)</span>
-              <span>2.5 (High)</span>
-              <span>3.5+ (Asymmetric)</span>
-            </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-800">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-sky-500 via-teal-400 to-emerald-400 transition-all duration-500"
-                style={{ width: `${metrics.sortinoScorePct}%` }}
-              />
-            </div>
-          </div>
-
-          <div className="mt-3.5 border-t border-gray-800/80 pt-2.5 text-[11px] text-gray-400 flex items-center justify-between">
-            <span className="text-gray-500">Formula</span>
-            <span className="font-mono text-gray-300">(R - Rf) / σ_downside</span>
-          </div>
-          <p className="mt-1 text-[11px] text-gray-500 leading-tight">
-            Penalizes <strong>only harmful downward volatility</strong>, rewarding strategies with upside drift.
-          </p>
-        </div>
-
-        {/* Volatility & Asymmetry Card */}
-        <div className="rounded-xl border border-gray-800/90 bg-gray-950/60 p-4 transition-all hover:border-gray-700">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Risk Decomposition</span>
-            <span className="text-xs font-medium text-emerald-400">
-              {metrics.sortino != null && metrics.sharpe != null && metrics.sharpe > 0
-                ? `+${Math.round(((metrics.sortino - metrics.sharpe) / metrics.sharpe) * 100)}% Sortino Lift`
-                : "Standard"}
-            </span>
-          </div>
-          <div className="mt-3 flex flex-col gap-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500">Total Volatility (σ)</span>
-              <span className="text-xs font-bold text-gray-200">
-                {metrics.annualVol != null ? `${(metrics.annualVol * 100).toFixed(1)}%` : "—"}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500">Downside Dev. (σ_d)</span>
-              <span className="text-xs font-bold text-red-400">
-                {metrics.downsideVol != null ? `${(metrics.downsideVol * 100).toFixed(1)}%` : "—"}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500">Upside / Downside Skew</span>
-              <span className="text-xs font-bold text-emerald-400">
-                {metrics.upsideDownsideRatio != null ? `${metrics.upsideDownsideRatio}x` : "—"}
-              </span>
-            </div>
-          </div>
-          <div className="mt-3.5 border-t border-gray-800/80 pt-2.5">
-            <div className="flex justify-between text-[11px] text-gray-400">
-              <span>Downside Risk Share</span>
-              <span className="font-semibold text-gray-300">
-                {metrics.annualVol != null && metrics.downsideVol != null && metrics.annualVol > 0
-                  ? `${((metrics.downsideVol / metrics.annualVol) * 100).toFixed(1)}%`
-                  : "—"}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Calmar Ratio & Drawdown Efficiency Card */}
-        <div className="rounded-xl border border-gray-800/90 bg-gray-950/60 p-4 transition-all hover:border-gray-700">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Calmar & Tail Risk</span>
-            <span className="text-xs text-gray-500">Return / MaxDD</span>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-white">
-              {metrics.calmar != null ? `${metrics.calmar.toFixed(2)}x` : "—"}
-            </span>
-            <span className="text-xs text-gray-500">Calmar Ratio</span>
-          </div>
-          <div className="mt-3 flex flex-col gap-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-500">Observed Max Drawdown</span>
-              <span className="font-semibold text-amber-400">
-                {maxDrawdown != null ? `${maxDrawdown.toFixed(2)}%` : "—"}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-500">Data Samples</span>
-              <span className="font-semibold text-gray-300">{metrics.sampleCount} evaluations</span>
-            </div>
-          </div>
-          <div className="mt-3.5 border-t border-gray-800/80 pt-2.5">
-            <p className="text-[11px] text-emerald-400/90 flex items-center gap-1">
-              <Shield className="h-3 w-3 inline shrink-0" />
-              <span>Tail-risk bounds strictly enforced by risk guard</span>
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
 // ─── Data adapters: real PaperSessionSummary -> this dashboard's view models ─
 
 function buildPositions(s: PaperSessionSummary, nowMs: number): Position[] {
@@ -1027,18 +689,8 @@ function buildMarginAlloc(s: PaperSessionSummary): { slices: MarginAlloc[]; tota
   return { slices, totalMargin };
 }
 
-// ─── Worker status overview (all nine control/candidate/grid workers at a glance) ─
-const WORKER_ORDER = [
-  "control_5m_futures",
-  "candidate_5m_futures",
-  "control_10m_futures",
-  "candidate_10m_futures",
-  "control_15m_futures",
-  "candidate_15m_futures",
-  "grid_futures_5x_v3",
-  "grid_futures_10x_v3",
-  "morning_glory_futures",
-] as const;
+// ─── Worker status overview (all six control/candidate workers at a glance) ─
+const WORKER_ORDER = ["control_5m", "control_10m", "control_15m", "candidate_5m", "candidate_10m", "candidate_15m"] as const;
 
 function workerRank(id: string): number {
   const idx = WORKER_ORDER.indexOf(id as (typeof WORKER_ORDER)[number]);
@@ -1072,30 +724,21 @@ const WorkerCard: React.FC<{
         ? "fresh"
         : "stopped";
   const market = marketTelemetry(s, nowMs);
-  const evaluatedSignals =
-    finiteNumber(decision?.latest_funnel?.signals_evaluated) ??
-    finiteNumber(decision?.latest_funnel?.evaluated) ??
-    finiteNumber(decision?.window?.signals_evaluated) ??
-    0;
-  const trueSignals =
-    finiteNumber(decision?.latest_funnel?.signals_true) ??
-    finiteNumber(decision?.latest_funnel?.passed_signal) ??
-    finiteNumber(decision?.window?.signals_true) ??
-    0;
-  const isLedgerInSync = account?.ledger_status === "in_sync" || account?.ledger_status === "OK" || account?.ledger_status === "reconciled_clean";
+  const evaluatedSignals = finiteNumber(decision?.latest_funnel.signals_evaluated) ?? 0;
+  const trueSignals = finiteNumber(decision?.latest_funnel.signals_true) ?? 0;
 
   return (
     <button
       onClick={onSelect}
       className={cn(
         "flex flex-col gap-2 rounded-xl border bg-gray-900/80 p-4 text-left transition-colors",
-        selected ? "border-emerald-500 ring-1 ring-emerald-500/30" : "border-gray-800 hover:border-gray-700",
+        selected ? "border-emerald-500" : "border-gray-800 hover:border-gray-700",
       )}
     >
       <div className="flex items-center justify-between">
         <span className="font-bold text-white">{account?.worker_id ?? s.session_id}</span>
         <span className={cn(
-          "inline-block h-2.5 w-2.5 rounded-full animate-pulse",
+          "inline-block h-2 w-2 rounded-full",
           heartbeatState === "fresh" ? "bg-emerald-500" : heartbeatState === "stale" ? "bg-amber-500" : "bg-gray-600",
         )} />
       </div>
@@ -1110,6 +753,8 @@ const WorkerCard: React.FC<{
         {openCount === 0 ? (
           <span className="text-gray-600">No open positions · {s.trade_count} closed retained</span>
         ) : (
+          // A glance card summarizes; per-symbol rows belong in the Open
+          // Positions table on the full worker view (click through for that).
           <div className="flex items-center justify-between">
             <span className="text-gray-300">{openCount} open position{openCount === 1 ? "" : "s"}</span>
             <span className={cn("font-semibold", valueColor(aggregateUnrealizedPnl))}>
@@ -1125,10 +770,10 @@ const WorkerCard: React.FC<{
       </div>
 
       <div className="flex items-center justify-between text-xs">
-        <span className={isLedgerInSync ? "text-emerald-400" : "text-red-400"}>
+        <span className={account?.ledger_status === "OK" ? "text-emerald-400" : "text-red-400"}>
           Ledger: {account?.ledger_status ?? "UNAVAILABLE"}
         </span>
-        <span className={heartbeatState === "fresh" ? "text-emerald-400 font-medium" : heartbeatState === "stale" ? "text-amber-400" : "text-gray-500"}>
+        <span className={heartbeatState === "stale" ? "text-amber-400" : "text-gray-500"}>
           Heartbeat: {formatAge(heartbeatAgeMs)}
         </span>
       </div>
@@ -1143,10 +788,10 @@ const WorkerCard: React.FC<{
       </div>
 
       {decision && (
-        <div className="border-t border-gray-800 pt-2 text-xs text-gray-400 flex items-center justify-between">
+        <div className="border-t border-gray-800 pt-2 text-xs text-gray-500">
           <span className="text-gray-400">Decision: </span>
-          <span className="text-emerald-400 font-medium">{evaluatedSignals} evaluated · {trueSignals} signals</span>
-          {decision.latest_rejections.strategy ? <span className="text-amber-400">· {decision.latest_rejections.strategy}</span> : null}
+          {evaluatedSignals} evaluated · {trueSignals} signals
+          {decision.latest_rejections.strategy ? ` · ${decision.latest_rejections.strategy}` : ""}
         </div>
       )}
     </button>
@@ -1182,47 +827,13 @@ const WorkerStatusGrid: React.FC<{
 // ─── Main Page ──────────────────────────────────────────────────────
 export function PaperTrading() {
   const notificationCursor = useRef<string | undefined>(undefined);
-  const seenNotificationIds = useRef<Set<string>>(new Set());
-  const initialNotificationsLoaded = useRef(false);
-
   useEffect(() => {
     const poll = async () => {
       try {
         const events = await api.getPaperTradingNotifications(notificationCursor.current);
-        
-        // On initial mount, absorb existing historical notifications without firing toasts
-        if (!initialNotificationsLoaded.current) {
-          for (const event of events) {
-            seenNotificationIds.current.add(event.id);
-            if (!notificationCursor.current || event.created_at > notificationCursor.current) {
-              notificationCursor.current = event.created_at;
-            }
-          }
-          initialNotificationsLoaded.current = true;
-          return;
-        }
-
-        // Only display toasts for new, important events (errors, warnings, critical, or explicit important flags)
         for (const event of events) {
-          if (seenNotificationIds.current.has(event.id)) continue;
-          seenNotificationIds.current.add(event.id);
+          toast(event.title, { description: event.message });
           notificationCursor.current = event.created_at;
-
-          const isImportant =
-            event.severity === "warning" ||
-            event.severity === "error" ||
-            event.severity === "critical" ||
-            Boolean((event as any).important);
-
-          if (isImportant) {
-            if (event.severity === "error" || event.severity === "critical") {
-              toast.error(event.title, { description: event.message });
-            } else if (event.severity === "warning") {
-              toast.warning(event.title, { description: event.message });
-            } else {
-              toast.info(event.title, { description: event.message });
-            }
-          }
         }
       } catch { /* dashboard polling must not affect trading visibility */ }
     };
@@ -1239,15 +850,6 @@ export function PaperTrading() {
   const [activeTab, setActiveTab] = useState<PaperTab>("timed");
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
-  const [isAccelerating, setIsAccelerating] = useState(false);
-  const [isSwitchingTestnet, setIsSwitchingTestnet] = useState(false);
-  const [testnetStatusModal, setTestnetStatusModal] = useState<{
-    open: boolean;
-    title: string;
-    message: string;
-    ready: boolean;
-    workers?: Array<{ id: string; trade_count: number; ready: boolean; needed: number; realized_pnl: number }>;
-  } | null>(null);
   const mountedRef = useRef(false);
   const providerMountedRef = useRef(false);
   const userPickedTabRef = useRef(false);
@@ -1350,76 +952,6 @@ export function PaperTrading() {
     () => visibleSessions.find((x) => x.session_id === selectedSessionId) ?? visibleSessions[0] ?? null,
     [visibleSessions, selectedSessionId],
   );
-
-  const riskMetrics = useMemo(() => (s ? computeRiskAdjustedMetrics(s) : null), [s]);
-
-  // 100-trades verification gate status across all workers
-  const testnetGateStats = useMemo(() => {
-    const list = sessions ?? [];
-    const minRequired = 100;
-    const totalWorkers = list.length;
-    const readyWorkers = list.filter((w) => (w.trade_count ?? 0) >= minRequired).length;
-    const totalClosedTrades = list.reduce((acc, w) => acc + (w.trade_count ?? 0), 0);
-    const targetTotalTrades = totalWorkers * minRequired;
-    const progressPct = targetTotalTrades > 0 ? Math.min(100, Math.round((totalClosedTrades / targetTotalTrades) * 100)) : 0;
-    const isGateUnlocked = totalWorkers > 0 && readyWorkers === totalWorkers;
-
-    return {
-      minRequired,
-      totalWorkers,
-      readyWorkers,
-      totalClosedTrades,
-      targetTotalTrades,
-      progressPct,
-      isGateUnlocked,
-    };
-  }, [sessions]);
-
-  const handleAccelerateTrades = useCallback(async (count = 15, isTargetAbsolute = false) => {
-    try {
-      setIsAccelerating(true);
-      await api.acceleratePaperTrades({ sessionId: "all", count, isTargetAbsolute });
-      toast.success(isTargetAbsolute ? "Simulated all trading workers to 100+ trades!" : `Generated +${count} paper trades for all workers`);
-      await load();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to accelerate paper trades");
-    } finally {
-      setIsAccelerating(false);
-    }
-  }, [load]);
-
-  const handleSwitchToTestnet = useCallback(async () => {
-    try {
-      setIsSwitchingTestnet(true);
-      const res = await api.switchTestnet();
-      setTestnetStatusModal({
-        open: true,
-        title: res.ok ? "✅ Testnet Migration Authorized!" : "⚠️ Testnet Gate Locked",
-        message: res.message,
-        ready: res.ok,
-        workers: res.workers,
-      });
-      if (res.ok) {
-        toast.success("Sandbox OKX Testnet Connection Activated!");
-      }
-    } catch (e: any) {
-      // In case of 400 gate locked with payload
-      try {
-        const parsed = JSON.parse(e.message);
-        setTestnetStatusModal({
-          open: true,
-          title: "⚠️ Testnet Gate Locked",
-          message: parsed.message || "All workers must reach 100 verified closed trades before switching to Testnet.",
-          ready: false,
-          workers: parsed.workers,
-        });
-      } catch {
-        toast.error(e instanceof Error ? e.message : "Testnet gate validation failed");
-      }
-    } finally {
-      setIsSwitchingTestnet(false);
-    }
-  }, []);
 
   if (error && !sessions) {
     return <div className="min-h-screen bg-[#0a0e17] p-5 text-red-400">{error}</div>;
@@ -1529,15 +1061,10 @@ export function PaperTrading() {
   const largestWin = winningPnls.length ? Math.max(...winningPnls) : null;
   const largestLoss = losingPnls.length ? Math.min(...losingPnls) : null;
 
-  const currentRiskMetrics = riskMetrics ?? computeRiskAdjustedMetrics(s);
-
   const pnlSummary = [
     { label: "Total Closed Trades", value: String(s.trade_count), color: "text-gray-400" },
     { label: "Win Rate", value: overall?.win_rate != null ? `${(overall.win_rate * 100).toFixed(2)}%` : "—", color: "text-emerald-400" },
     { label: "Profit Factor", value: overall?.profit_factor != null ? overall.profit_factor.toFixed(2) : "—", color: overall?.profit_factor != null && overall.profit_factor >= 1 ? "text-emerald-400" : "text-red-400" },
-    { label: "Sharpe Ratio", value: currentRiskMetrics.sharpe != null ? currentRiskMetrics.sharpe.toFixed(2) : "—", color: currentRiskMetrics.sharpeColor },
-    { label: "Sortino Ratio", value: currentRiskMetrics.sortino != null ? currentRiskMetrics.sortino.toFixed(2) : "—", color: currentRiskMetrics.sortinoColor },
-    { label: "Calmar Ratio", value: currentRiskMetrics.calmar != null ? `${currentRiskMetrics.calmar.toFixed(2)}x` : "—", color: "text-sky-400" },
     { label: "Total Net P&L", value: signedMoneyOrDash(realizedPnl), color: valueColor(realizedPnl) },
     { label: "Average Win", value: overall?.avg_win != null ? usd(overall.avg_win) : "—", color: "text-emerald-400" },
     { label: "Average Loss", value: overall?.avg_loss != null ? `-${usd(overall.avg_loss)}` : "—", color: "text-red-400" },
@@ -1584,91 +1111,6 @@ export function PaperTrading() {
         nowMs={nowMs}
       />
       <ProviderHealthBar health={providerHealth} error={providerHealthError} active={market.source} nowMs={nowMs} />
-
-      {/* Testnet Gate & 100-Trades Readiness Milestone Banner */}
-      <div className="mb-5 rounded-xl border border-indigo-900/50 bg-gradient-to-r from-indigo-950/60 via-slate-900/80 to-blue-950/60 p-4 shadow-lg backdrop-blur">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <div className={cn(
-              "rounded-lg p-2.5 mt-0.5",
-              testnetGateStats.isGateUnlocked ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40" : "bg-indigo-500/20 text-indigo-400 border border-indigo-500/40"
-            )}>
-              {testnetGateStats.isGateUnlocked ? <CheckCircle2 className="h-6 w-6" /> : <Shield className="h-6 w-6" />}
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-semibold text-white text-base">
-                  Testnet Transition Gate: 100 Trades Requirement
-                </h3>
-                <span className={cn(
-                  "px-2 py-0.5 text-xs font-semibold rounded-full border",
-                  testnetGateStats.isGateUnlocked
-                    ? "bg-emerald-950/60 text-emerald-300 border-emerald-700"
-                    : "bg-amber-950/60 text-amber-300 border-amber-700"
-                )}>
-                  {testnetGateStats.isGateUnlocked ? "Gate Cleared (100% Ready)" : `${testnetGateStats.readyWorkers}/${testnetGateStats.totalWorkers} Workers Ready`}
-                </span>
-                <span className="text-xs text-gray-400">
-                  Target: 100 closed trades per timeframe worker ({testnetGateStats.totalClosedTrades}/{testnetGateStats.targetTotalTrades} total)
-                </span>
-              </div>
-              <p className="text-xs text-gray-300 mt-1 max-w-2xl">
-                Strict risk-control policy requires every active strategy worker (5m, 10m, 15m, and tick engines) to record a minimum of 100 statistically validated paper trades before the OKX Testnet / Demo futures sandbox execution gate can be unlocked.
-              </p>
-
-              {/* Progress bar */}
-              <div className="mt-2.5 flex items-center gap-3">
-                <div className="w-64 h-2 rounded-full bg-slate-800 overflow-hidden border border-slate-700">
-                  <div
-                    className={cn(
-                      "h-full transition-all duration-500",
-                      testnetGateStats.isGateUnlocked ? "bg-emerald-400" : "bg-gradient-to-r from-blue-500 to-indigo-400"
-                    )}
-                    style={{ width: `${testnetGateStats.progressPct}%` }}
-                  />
-                </div>
-                <span className="text-xs font-medium text-slate-300">{testnetGateStats.progressPct}% verified</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <button
-              onClick={() => void handleAccelerateTrades(15, false)}
-              disabled={isAccelerating}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs font-medium text-slate-200 transition-colors disabled:opacity-50"
-              title="Fast-forward paper market orders by +15 trades across all workers"
-            >
-              <Zap className="h-3.5 w-3.5 text-amber-400" />
-              {isAccelerating ? "Simulating..." : "+15 Trades"}
-            </button>
-            <button
-              onClick={() => void handleAccelerateTrades(100, true)}
-              disabled={isAccelerating}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-indigo-700/60 bg-indigo-900/30 hover:bg-indigo-900/60 text-xs font-medium text-indigo-200 transition-colors disabled:opacity-50"
-              title="Fast-forward all workers to meet the 100-trades quota"
-            >
-              <Zap className="h-3.5 w-3.5 text-indigo-400" />
-              {isAccelerating ? "Accelerating..." : "Reach 100 Trades (All)"}
-            </button>
-            <button
-              onClick={() => void handleSwitchToTestnet()}
-              disabled={isSwitchingTestnet}
-              className={cn(
-                "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow transition-all",
-                testnetGateStats.isGateUnlocked
-                  ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950"
-                  : "bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700"
-              )}
-            >
-              <Server className="h-3.5 w-3.5" />
-              {isSwitchingTestnet ? "Validating..." : "Switch to Testnet Account"}
-              <ArrowRight className="h-3 w-3 ml-0.5" />
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* Tabs + session picker */}
       <div className="mb-4 flex items-center gap-2 flex-wrap">
@@ -1752,7 +1194,7 @@ export function PaperTrading() {
       </div>
 
       {/* Stats Row */}
-      <div className="mb-5 grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-11 gap-3">
+      <div className="mb-5 grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-9 gap-3">
         <StatCard label="Initial Capital" value={moneyOrDash(initialCapital)} sub="Configured paper capital" />
         <StatCard label="Wallet Balance" value={moneyOrDash(walletBalance)} sub={`Available: ${moneyOrDash(availableBalance)}`} />
         <StatCard
@@ -1761,7 +1203,7 @@ export function PaperTrading() {
           sub={`In Use: ${leveragedCount} Position${leveragedCount === 1 ? "" : "s"}`}
           valueColor={reservedMargin == null ? "text-gray-500" : "text-orange-400"}
         />
-        <StatCard label="Open Notional" value={moneyOrDash(openNotional)} sub="From marked positions" />
+        <StatCard label="Open Notional" value={moneyOrDash(openNotional)} sub="From current marked positions" />
         <StatCard
           label="Unrealized P&L"
           value={signedMoneyOrDash(unrealizedPnl)}
@@ -1770,20 +1212,6 @@ export function PaperTrading() {
           glow
         />
         <StatCard label="Realized P&L" value={signedMoneyOrDash(realizedPnl)} sub="All Time" valueColor={valueColor(realizedPnl)} glow />
-        <StatCard
-          label="Sharpe Ratio"
-          value={currentRiskMetrics.sharpe != null ? currentRiskMetrics.sharpe.toFixed(2) : "—"}
-          sub={currentRiskMetrics.sharpeRating}
-          valueColor={currentRiskMetrics.sharpeColor}
-          glow
-        />
-        <StatCard
-          label="Sortino Ratio"
-          value={currentRiskMetrics.sortino != null ? currentRiskMetrics.sortino.toFixed(2) : "—"}
-          sub={currentRiskMetrics.sortinoRating}
-          valueColor={currentRiskMetrics.sortinoColor}
-          glow
-        />
         <StatCard label="Fees Paid" value={moneyOrDash(feesPaid)} sub="All Time" />
         <StatCard label="Funding (Net)" value={signedMoneyOrDash(fundingPnl)} sub="Account Scoped" valueColor={valueColor(fundingPnl)} />
         <StatCard label="Current Equity" value={moneyOrDash(equity)} sub={signedPctOrDash(pnlPct)} valueColor={valueColor(pnl)} glow />
@@ -1796,15 +1224,6 @@ export function PaperTrading() {
           <div className="rounded-lg border border-gray-800 bg-gray-900/70 p-3">Risk state: {account.risk_state && Object.keys(account.risk_state).length ? JSON.stringify(account.risk_state) : "Normal"}</div>
         </div>
       )}
-
-      {/* Risk-Adjusted Returns & Edge Analysis */}
-      <RiskAdjustedSection
-        metrics={currentRiskMetrics}
-        strategyId={account?.strategy_id ?? s.session.strategy_id ?? s.session_id}
-        timeframe={account?.timeframe ?? s.session.timeframe ?? "15m"}
-        leverage={Number(configuredLeverage ?? 5)}
-        maxDrawdown={finiteNumber(s.max_drawdown) ?? 3.8}
-      />
 
       {/* Open Positions Table */}
       <div className="mb-5 rounded-xl border border-gray-800 bg-gray-900/80 p-5">
@@ -1863,18 +1282,6 @@ export function PaperTrading() {
             </tbody>
           </table>
         </div>
-      </div>
-
-      {/* Sharpe & Sortino Tracking Over Time (Recharts) */}
-      <div className="my-5">
-        <SharpeSortinoTrackingChart
-          defaultStrategyId={selectedSessionId ?? undefined}
-          onStrategyChange={(id) => {
-            if (id !== "all") {
-              setSelectedSessionId(id);
-            }
-          }}
-        />
       </div>
 
       {/* Bottom Cards Row */}
@@ -1981,78 +1388,6 @@ export function PaperTrading() {
           </table>
         </div>
       </div>
-
-      {/* Testnet Status & Verification Gate Modal */}
-      {testnetStatusModal?.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="w-full max-w-xl rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center gap-3">
-              <div className={cn(
-                "p-3 rounded-xl",
-                testnetStatusModal.ready ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40" : "bg-amber-500/20 text-amber-400 border border-amber-500/40"
-              )}>
-                {testnetStatusModal.ready ? <CheckCircle2 className="h-6 w-6" /> : <AlertTriangle className="h-6 w-6" />}
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-white">{testnetStatusModal.title}</h3>
-                <p className="text-xs text-slate-400 mt-0.5">Automated Risk & Trade Volume Validation Gate</p>
-              </div>
-            </div>
-
-            <p className="text-sm text-slate-300 mt-4 leading-relaxed bg-slate-950/60 p-3 rounded-lg border border-slate-800">
-              {testnetStatusModal.message}
-            </p>
-
-            {testnetStatusModal.workers && testnetStatusModal.workers.length > 0 && (
-              <div className="mt-4">
-                <div className="text-xs font-semibold uppercase text-slate-400 mb-2">Worker Verification Progress</div>
-                <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
-                  {testnetStatusModal.workers.map((w) => (
-                    <div key={w.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-800/60 border border-slate-700/50 text-xs">
-                      <span className="font-mono text-slate-200">{w.id}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-slate-400">{w.trade_count}/100 trades</span>
-                        {w.ready ? (
-                          <span className="px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800 text-[10px] font-semibold">
-                            PASSED
-                          </span>
-                        ) : (
-                          <span className="px-2 py-0.5 rounded bg-amber-950/80 text-amber-400 border border-amber-800 text-[10px] font-semibold">
-                            NEEDS {w.needed} MORE
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="mt-6 flex items-center justify-between gap-3">
-              {!testnetStatusModal.ready && (
-                <button
-                  onClick={async () => {
-                    await handleAccelerateTrades(100, true);
-                    setTestnetStatusModal(null);
-                  }}
-                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white shadow-lg transition-colors flex items-center gap-1.5"
-                >
-                  <Zap className="h-3.5 w-3.5" />
-                  Fast-Forward to 100 Trades Now
-                </button>
-              )}
-              <div className="ml-auto">
-                <button
-                  onClick={() => setTestnetStatusModal(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

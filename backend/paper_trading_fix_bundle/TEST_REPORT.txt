@@ -1,0 +1,25 @@
+COMMAND
+/opt/pyvenv/bin/python -S -m unittest discover -v tests
+
+STDOUT
+
+STDERR
+test_complete_reconciled_ledger_is_ok (test_paper_accounting_guard.AccountingDecisionTests.test_complete_reconciled_ledger_is_ok) ... ok
+test_missing_configured_mark_is_deferred_not_frozen (test_paper_accounting_guard.AccountingDecisionTests.test_missing_configured_mark_is_deferred_not_frozen) ... ok
+test_position_mismatch_is_error_even_when_equity_looks_valid (test_paper_accounting_guard.AccountingDecisionTests.test_position_mismatch_is_error_even_when_equity_looks_valid) ... ok
+test_two_thousand_dollar_residual_is_error (test_paper_accounting_guard.AccountingDecisionTests.test_two_thousand_dollar_residual_is_error) ... ok
+test_unconfigured_open_symbol_is_a_ledger_error (test_paper_accounting_guard.AccountingDecisionTests.test_unconfigured_open_symbol_is_a_ledger_error) ... ok
+test_book_and_trade_quantities_match (test_paper_accounting_guard.LedgerTests.test_book_and_trade_quantities_match) ... ok
+test_book_and_trade_quantity_mismatch_is_reported (test_paper_accounting_guard.LedgerTests.test_book_and_trade_quantity_mismatch_is_reported) ... ok
+test_complete_snapshot_is_normalized (test_paper_accounting_guard.PriceSnapshotTests.test_complete_snapshot_is_normalized) ... ok
+test_missing_price_fails_before_mutation (test_paper_accounting_guard.PriceSnapshotTests.test_missing_price_fails_before_mutation) ... ok
+test_zero_nan_and_infinite_prices_are_rejected (test_paper_accounting_guard.PriceSnapshotTests.test_zero_nan_and_infinite_prices_are_rejected) ... ok
+test_recovery_is_dry_run_by_default (test_recovery_tool.RecoveryToolTests.test_recovery_is_dry_run_by_default) ... ok
+test_recovery_refuses_position_mismatch (test_recovery_tool.RecoveryToolTests.test_recovery_refuses_position_mismatch) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.003s
+
+OK
+
+EXIT_CODE=0

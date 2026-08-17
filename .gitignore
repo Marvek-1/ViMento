@@ -37,3 +37,17 @@ Thumbs.db
 # Test & coverage
 coverage/
 .nyc_output/
+
+# Local dev server log (scripts/dev-local.sh)
+.dev-local.log
+
+# Python virtualenv (scripts/dev-local.sh) - contains symlinks Windows git cannot index
+.venv/
+venv/
+
+# Local dev shim created by scripts/dev-local.sh (symlink -> ../frontend)
+backend/frontend
+
+# Production credentials pulled from the VPS - never commit
+secrets/
+*.pgpass
